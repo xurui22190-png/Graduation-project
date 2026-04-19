@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.TeacherScoreStatisticsMapper">
+
+    <sql id="whereSql">
+        WHERE 1=1
+          AND ta.scTeacherId = #{teacherId}
+          AND ta.scStatus = 1
+        <if test="dto.tctermid != null and dto.tctermid != 0">
+            AND ta.scTermId = #{dto.tctermid}
+        </if>
+        <if test="dto.tcclassid != null and dto.tcclassid != 0">
+            AND ta.scClassId = #{dto.tcclassid}
+        </if>
+        <if test="dto.tccourseid != null and dto.tccourseid != 0">
+            AND ta.scCourseId = #{dto.tccourseid}
+        </if>
+    </sql>
+
+    <select id="getList" resultType="com.demo.vo.TeacherScoreStatisticsVo">
+        SELECT
+            ta.scId AS scid,
+            ta.sid AS sid,
+            ta.sNo AS sno,
+            ta.sName AS sname,
+            ta.sSex AS ssex,
+            ta.sClassId AS sclassid,
+            ta.className AS classname,
+            ta.classCode AS classcode,
+            ta.yYear AS yyear,
+            ta.yTerm AS yterm,
+            ta.yAll AS yall,
+            ta.scCourseId AS sccourseid,
+            ta.crCode AS crcode,
+            ta.crName AS crname,
+            ta.scScore AS scscore,
+            ta.scStatus AS scstatus,
+            DATE_FORMAT(ta.scCreateDate,'%Y-%m-%d %H:%i:%s') AS screatedate
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        ORDER BY ta.scId DESC
+        LIMIT #{dto.pageStart}, #{dto.pageSize}
+    </select>
+
+    <select id="getCount" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM vwscores ta
+        <include refid="whereSql"/>
+    </select>
+
+    <select id="getSummary" resultType="com.demo.vo.TeacherScoreSummaryVo">
+        SELECT
+            COUNT(1) AS totalCount,
+            IFNULL(ROUND(AVG(ta.scScore), 2), 0) AS avgScore,
+            IFNULL(MAX(ta.scScore), 0) AS maxScore,
+            IFNULL(MIN(ta.scScore), 0) AS minScore,
+            IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS passRate,
+            IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 85 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS goodRate
+        FROM vwscores ta
+        <include refid="whereSql"/>
+    </select>
+
+    <select id="getRangeData" resultType="java.util.HashMap">
+        SELECT '不及格' AS name, COUNT(1) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        AND ta.scScore &lt; 60
+
+        UNION ALL
+
+        SELECT '60-69' AS name, COUNT(1) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        AND ta.scScore &gt;= 60 AND ta.scScore &lt; 70
+
+        UNION ALL
+
+        SELECT '70-79' AS name, COUNT(1) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        AND ta.scScore &gt;= 70 AND ta.scScore &lt; 80
+
+        UNION ALL
+
+        SELECT '80-89' AS name, COUNT(1) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        AND ta.scScore &gt;= 80 AND ta.scScore &lt; 90
+
+        UNION ALL
+
+        SELECT '90-100' AS name, COUNT(1) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        AND ta.scScore &gt;= 90
+    </select>
+
+    <select id="getClassAvgData" resultType="java.util.HashMap">
+        SELECT
+            ta.className AS name,
+            ROUND(AVG(ta.scScore), 2) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        GROUP BY ta.sClassId, ta.className
+        ORDER BY value DESC
+    </select>
+
+    <select id="getTrendData" resultType="java.util.HashMap">
+        SELECT
+            ta.yAll AS name,
+            ROUND(AVG(ta.scScore), 2) AS value
+        FROM vwscores ta
+        <include refid="whereSql"/>
+        GROUP BY ta.scTermId, ta.yAll
+        ORDER BY ta.scTermId ASC
+    </select>
+
+    <select id="getTermList" resultType="java.util.HashMap">
+        SELECT DISTINCT
+            yt.yId AS yid,
+            yt.yYear AS yyear,
+            yt.yTerm AS yterm,
+            yt.yAll AS yall
+        FROM teaching t
+        LEFT JOIN yearterm yt ON t.tcTermId = yt.yId
+        WHERE t.tcTeacherId = #{teacherId}
+        ORDER BY yt.yId ASC
+    </select>
+
+    <select id="getClassList" resultType="java.util.HashMap">
+        SELECT DISTINCT
+            c.cId AS cid,
+            c.cName AS cname,
+            c.cCode AS ccode
+        FROM teaching t
+        LEFT JOIN classinfo c ON t.tcClassId = c.cId
+        WHERE t.tcTeacherId = #{teacherId}
+        ORDER BY c.cId ASC
+    </select>
+
+    <select id="getCourseList" resultType="java.util.HashMap">
+        SELECT DISTINCT
+            c.crId AS crid,
+            c.crCode AS crcode,
+            c.crName AS crname
+        FROM teaching t
+        LEFT JOIN courseinfo c ON t.tcCourseId = c.crId
+        WHERE t.tcTeacherId = #{teacherId}
+        ORDER BY c.crId ASC
+    </select>
+
+</mapper>

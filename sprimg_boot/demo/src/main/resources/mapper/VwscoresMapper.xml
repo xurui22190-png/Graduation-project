@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.VwscoresMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Vwscores">
+        <result column="scId" property="scid" />
+        <result column="scStudentId" property="scstudentid" />
+        <result column="scTermId" property="sctermid" />
+        <result column="scClassId" property="scclassid" />
+        <result column="scCourseId" property="sccourseid" />
+        <result column="scScore" property="scscore" />
+        <result column="scStatus" property="scstatus" />
+        <result column="scCreateDate" property="sccreatedate" />
+        <result column="scTeacherId" property="scteacherid" />
+        <result column="sNo" property="sno" />
+        <result column="sName" property="sname" />
+        <result column="sSex" property="ssex" />
+        <result column="sTel" property="stel" />
+        <result column="sIdcard" property="sidcard" />
+        <result column="sAddress" property="saddress" />
+        <result column="sCreateDate" property="screatedate" />
+        <result column="sAccountId" property="saccountid" />
+        <result column="yYear" property="yyear" />
+        <result column="yTerm" property="yterm" />
+        <result column="yAll" property="yall" />
+        <result column="crCode" property="crcode" />
+        <result column="crName" property="crname" />
+        <result column="tNo" property="tno" />
+        <result column="tName" property="tname" />
+        <result column="tSex" property="tsex" />
+        <result column="tTel" property="ttel" />
+        <result column="tEduLevel" property="tedulevel" />
+        <result column="tSchool" property="tschool" />
+        <result column="tAddress" property="taddress" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        scId, scStudentId, scTermId, scClassId, scCourseId, scScore, scStatus, scCreateDate, scTeacherId, sNo, sName, sSex, sTel, sIdcard, sAddress, sCreateDate, sAccountId, yYear, yTerm, yAll, crCode, crName, tNo, tName, tSex, tTel, tEduLevel, tSchool, tAddress
+    </sql>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.VwcollegeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Vwcollege">
+        <result column="CID" property="cid" />
+        <result column="cName" property="cname" />
+        <result column="cCode" property="ccode" />
+        <result column="cParentId" property="cparentid" />
+        <result column="cNamet" property="cnamet" />
+        <result column="cCodet" property="ccodet" />
+        <result column="cParentIdt" property="cparentidt" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        CID, cName, cCode, cParentId, cNamet, cCodet, cParentIdt
+    </sql>
+
+</mapper>

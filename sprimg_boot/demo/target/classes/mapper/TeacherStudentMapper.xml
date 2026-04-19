@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.TeacherStudentMapper">
+
+    <select id="getlist" resultType="com.demo.model.Vwteacherstudent">
+        SELECT DISTINCT
+        s.sId AS sid,
+        s.sNo AS sno,
+        s.sName AS sname,
+        s.sSex AS ssex,
+        s.sClassId AS sclassid,
+        c.cName AS className,
+        cr.crId AS courseid,
+        cr.crName AS courseName,
+        yt.yId AS termid,
+        CONCAT(yt.yYear, '-', yt.yTerm) AS termName
+        FROM teaching tc
+        INNER JOIN studentinfo s ON tc.tcClassId = s.sClassId
+        LEFT JOIN classinfo c ON s.sClassId = c.cId
+        LEFT JOIN courseinfo cr ON tc.tcCourseId = cr.crId
+        LEFT JOIN yearterm yt ON tc.tcTermId = yt.yId
+        WHERE tc.tcTeacherId = #{teacherId}
+
+        <if test="dto != null">
+            <if test="dto.tctermid != null and dto.tctermid != 0">
+                AND tc.tcTermId = #{dto.tctermid}
+            </if>
+
+            <if test="dto.tccourseid != null and dto.tccourseid != 0">
+                AND tc.tcCourseId = #{dto.tccourseid}
+            </if>
+
+            <if test="dto.tcclassid != null and dto.tcclassid != 0">
+                AND tc.tcClassId = #{dto.tcclassid}
+            </if>
+
+            <if test="dto.qkey != null and dto.qkey != ''">
+                AND (
+                s.sNo LIKE CONCAT('%', #{dto.qkey}, '%')
+                OR s.sName LIKE CONCAT('%', #{dto.qkey}, '%')
+                )
+            </if>
+        </if>
+
+        ORDER BY s.sId DESC
+    </select>
+
+</mapper>

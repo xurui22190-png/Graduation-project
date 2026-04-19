@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.StudentScoreMapper">
+
+    <select id="getStudentScoreList" resultType="com.demo.vo.StudentScoreVo">
+        select
+        scId as scid,
+        sid as sid,
+        sNo as sno,
+        sName as sname,
+        scTermId as sctermid,
+        yYear as yyear,
+        yTerm as yterm,
+        yAll as yall,
+        scCourseId as sccourseid,
+        crCode as crcode,
+        crName as crname,
+        scScore as scscore,
+        scStatus as scstatus,
+        tName as tname
+        from vwscores
+        where 1 = 1
+        <if test="dto.sid != null and dto.sid > 0">
+            and sid = #{dto.sid}
+        </if>
+        <if test="dto.termid != null and dto.termid > 0">
+            and scTermId = #{dto.termid}
+        </if>
+        <if test="dto.qkey != null and dto.qkey != ''">
+            and (
+            crName like concat('%', #{dto.qkey}, '%')
+            or crCode like concat('%', #{dto.qkey}, '%')
+            )
+        </if>
+        order by scTermId desc, scId desc
+    </select>
+
+</mapper>
