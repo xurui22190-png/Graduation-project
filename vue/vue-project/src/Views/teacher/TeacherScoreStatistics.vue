@@ -1,65 +1,69 @@
 <template>
   <div class="page-box">
     <!-- 查询区域 -->
-    <el-card shadow="never" class="search-card">
-      <el-form :inline="true" :model="searchForm">
-        <el-form-item label="学期">
-          <el-select
-            v-model="searchForm.tctermid"
-            placeholder="请选择学期"
-            clearable
-            filterable
-            style="width: 180px"
-          >
-            <el-option
-              v-for="item in termList"
-              :key="item.yid"
-              :label="item.yall || `${item.yyear || ''}${item.yterm || ''}`"
-              :value="item.yid"
-            />
-          </el-select>
-        </el-form-item>
+   <el-card shadow="never" class="search-card">
+  <el-form :inline="true" :model="searchForm">
+    <el-form-item label="学期">
+      <el-select
+        v-model="searchForm.tctermid"
+        placeholder="请选择学期"
+        clearable
+        filterable
+        style="width: 180px"
+      >
+        <el-option
+          v-for="item in termList"
+          :key="item.yid"
+          :label="item.yall || `${item.yyear || ''}${item.yterm || ''}`"
+          :value="item.yid"
+        />
+      </el-select>
+    </el-form-item>
 
-        <el-form-item label="班级">
-          <el-select
-            v-model="searchForm.tcclassid"
-            placeholder="请选择班级"
-            clearable
-            filterable
-            style="width: 180px"
-          >
-            <el-option
-              v-for="item in classList"
-              :key="item.cid"
-              :label="item.cname"
-              :value="item.cid"
-            />
-          </el-select>
-        </el-form-item>
+    <el-form-item label="班级">
+      <el-select
+        v-model="searchForm.tcclassid"
+        placeholder="请选择班级"
+        clearable
+        filterable
+        style="width: 180px"
+      >
+        <el-option
+          v-for="item in classList"
+          :key="item.cid"
+          :label="item.cname"
+          :value="item.cid"
+        />
+      </el-select>
+    </el-form-item>
 
-        <el-form-item label="课程">
-          <el-select
-            v-model="searchForm.tccourseid"
-            placeholder="请选择课程"
-            clearable
-            filterable
-            style="width: 180px"
-          >
-            <el-option
-              v-for="item in courseList"
-              :key="item.crid"
-              :label="item.crname"
-              :value="item.crid"
-            />
-          </el-select>
-        </el-form-item>
+    <el-form-item label="课程">
+      <el-select
+        v-model="searchForm.tccourseid"
+        placeholder="请选择课程"
+        clearable
+        filterable
+        style="width: 180px"
+      >
+        <el-option
+          v-for="item in courseList"
+          :key="item.crid"
+          :label="item.crname"
+          :value="item.crid"
+        />
+      </el-select>
+    </el-form-item>
 
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <el-form-item>
+      <el-button type="primary" @click="handleSearch">查询</el-button>
+      <el-button @click="handleReset">重置</el-button>
+    </el-form-item>
+  </el-form>
+
+  <div class="statistics-tip">
+    仅统计已录入成绩的数据，未录入学生不会计入平均分、及格率、优秀率等统计结果。
+  </div>
+</el-card>
 
     <!-- 汇总卡片 -->
     <div class="summary-box">
@@ -588,5 +592,14 @@ onBeforeUnmount(() => {
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+}
+.statistics-tip {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #f5f7fa;
+  color: #606266;
+  font-size: 13px;
+  border-radius: 4px;
+  line-height: 1.6;
 }
 </style>

@@ -102,7 +102,7 @@
 
       <el-menu-item index="/main/teacher/score">
         <i class="el-icon-edit"></i>
-        <span>成绩管理</span>
+        <span>成绩录入与查看</span>
       </el-menu-item>
 
       <el-menu-item index="/main/scores/t_statistics">

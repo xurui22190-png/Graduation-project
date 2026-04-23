@@ -1,5 +1,6 @@
 <template>
   <div class="page-box">
+    <!-- 查询区域 -->
     <el-card shadow="never" class="search-card">
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="关键字">
@@ -14,7 +15,7 @@
 
         <el-form-item label="学期">
           <el-select
-            v-model="searchForm.sctermid"
+            v-model="searchForm.tctermid"
             placeholder="请选择学期"
             clearable
             filterable
@@ -32,7 +33,7 @@
 
         <el-form-item label="班级">
           <el-select
-            v-model="searchForm.scclassid"
+            v-model="searchForm.tcclassid"
             placeholder="请选择班级"
             clearable
             filterable
@@ -50,7 +51,7 @@
 
         <el-form-item label="课程">
           <el-select
-            v-model="searchForm.sccourseid"
+            v-model="searchForm.tccourseid"
             placeholder="请选择课程"
             clearable
             filterable
@@ -68,12 +69,16 @@
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
-          <el-button type="success" @click="handleOpenEntryDialog">成绩录入</el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
+    <!-- 表格区域 -->
     <el-card shadow="never" class="table-card">
+      <template #header>
+        <span>授课学生列表</span>
+      </template>
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -81,20 +86,12 @@
         stripe
         style="width: 100%"
       >
-        <el-table-column prop="sno" label="学号" min-width="120" />
+        <el-table-column prop="sno" label="学号" min-width="140" />
         <el-table-column prop="sname" label="姓名" min-width="100" />
+        <el-table-column prop="ssex" label="性别" min-width="80" />
         <el-table-column prop="cname" label="班级" min-width="140" />
-        <el-table-column prop="crname" label="课程" min-width="140" />
-        <el-table-column prop="yall" label="学期" min-width="140" />
-        <el-table-column prop="tname" label="教师" min-width="100" />
-        <el-table-column prop="scscore" label="成绩" min-width="90" />
-        <el-table-column label="状态" min-width="90">
-          <template #default="scope">
-            <el-tag v-if="scope.row.scstatus === 1" type="success">已录入</el-tag>
-            <el-tag v-else type="info">未录入</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="sccreatedate" label="登记时间" min-width="180" />
+        <el-table-column prop="mname" label="专业" min-width="160" />
+        <el-table-column prop="stel" label="电话" min-width="140" />
       </el-table>
 
       <div class="pager-box">
@@ -110,109 +107,6 @@
         />
       </div>
     </el-card>
-
-    <el-dialog
-      v-model="dialogVisible"
-      title="成绩录入"
-      width="980px"
-      destroy-on-close
-    >
-      <el-form :inline="true" :model="entryForm" class="entry-form">
-        <el-form-item label="学期">
-          <el-select
-            v-model="entryForm.sctermid"
-            placeholder="请选择学期"
-            clearable
-            filterable
-            style="width: 180px"
-            @change="handleEntryTermChange"
-          >
-            <el-option
-              v-for="item in entryTermList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="班级">
-          <el-select
-            v-model="entryForm.scclassid"
-            placeholder="请选择班级"
-            clearable
-            filterable
-            style="width: 180px"
-            @change="handleEntryClassChange"
-          >
-            <el-option
-              v-for="item in entryClassList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="课程">
-          <el-select
-            v-model="entryForm.sccourseid"
-            placeholder="请选择课程"
-            clearable
-            filterable
-            style="width: 180px"
-          >
-            <el-option
-              v-for="item in entryCourseList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" @click="loadStudentScoreList">加载学生</el-button>
-        </el-form-item>
-      </el-form>
-
-      <el-table
-        v-loading="studentLoading"
-        :data="studentTableData"
-        border
-        stripe
-        max-height="420"
-      >
-        <el-table-column prop="sno" label="学号" min-width="120" />
-        <el-table-column prop="sname" label="姓名" min-width="100" />
-        <el-table-column prop="cname" label="班级" min-width="140" />
-        <el-table-column label="成绩" min-width="140">
-          <template #default="scope">
-            <el-input-number
-              v-model="scope.row.scscore"
-              :min="0"
-              :max="100"
-              :precision="2"
-              controls-position="right"
-              style="width: 120px"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="120">
-          <template #default="scope">
-            <el-select v-model="scope.row.scstatus" style="width: 100px">
-              <el-option label="未录入" :value="0" />
-              <el-option label="已录入" :value="1" />
-            </el-select>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <template #footer>
-        <el-button @click="dialogVisible = false">关闭</el-button>
-        <el-button type="primary" @click="handleSaveScore">保存成绩</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -222,28 +116,18 @@ import axios from "@/utils/Axios"
 import { ElMessage } from "element-plus"
 
 const loading = ref(false)
-const studentLoading = ref(false)
-const dialogVisible = ref(false)
-
 const tableData = ref([])
 const total = ref(0)
 const pageIndex = ref(1)
 const pageSize = ref(10)
 
 const taskList = ref([])
-const studentTableData = ref([])
 
 const searchForm = reactive({
   qkey: "",
-  sctermid: null,
-  scclassid: null,
-  sccourseid: null
-})
-
-const entryForm = reactive({
-  sctermid: null,
-  scclassid: null,
-  sccourseid: null
+  tctermid: null,
+  tcclassid: null,
+  tccourseid: null
 })
 
 const buildUniqueOptions = (list, valueKey, labelKey) => {
@@ -263,11 +147,11 @@ const buildUniqueOptions = (list, valueKey, labelKey) => {
 
 const filteredTaskList = computed(() => {
   let arr = [...taskList.value]
-  if (searchForm.sctermid) {
-    arr = arr.filter((item) => item.tctermid === searchForm.sctermid)
+  if (searchForm.tctermid) {
+    arr = arr.filter((item) => Number(item.tctermid) === Number(searchForm.tctermid))
   }
-  if (searchForm.scclassid) {
-    arr = arr.filter((item) => item.tcclassid === searchForm.scclassid)
+  if (searchForm.tcclassid) {
+    arr = arr.filter((item) => Number(item.tcclassid) === Number(searchForm.tcclassid))
   }
   return arr
 })
@@ -278,8 +162,8 @@ const termList = computed(() => {
 
 const classList = computed(() => {
   let arr = [...taskList.value]
-  if (searchForm.sctermid) {
-    arr = arr.filter((item) => item.tctermid === searchForm.sctermid)
+  if (searchForm.tctermid) {
+    arr = arr.filter((item) => Number(item.tctermid) === Number(searchForm.tctermid))
   }
   return buildUniqueOptions(arr, "tcclassid", "cname")
 })
@@ -288,36 +172,17 @@ const courseList = computed(() => {
   return buildUniqueOptions(filteredTaskList.value, "tccourseid", "crname")
 })
 
-const entryTermList = computed(() => {
-  return buildUniqueOptions(taskList.value, "tctermid", "yall")
-})
-
-const entryClassList = computed(() => {
-  let arr = [...taskList.value]
-  if (entryForm.sctermid) {
-    arr = arr.filter((item) => item.tctermid === entryForm.sctermid)
-  }
-  return buildUniqueOptions(arr, "tcclassid", "cname")
-})
-
-const entryCourseList = computed(() => {
-  let arr = [...taskList.value]
-  if (entryForm.sctermid) {
-    arr = arr.filter((item) => item.tctermid === entryForm.sctermid)
-  }
-  if (entryForm.scclassid) {
-    arr = arr.filter((item) => item.tcclassid === entryForm.scclassid)
-  }
-  return buildUniqueOptions(arr, "tccourseid", "crname")
-})
-
 const loadTaskList = async () => {
   try {
-    const res = await axios.get("/teacherscore/gettasklist")
-    if (res.data && (res.data.code === 200 || res.data._code === 200)) {
-      taskList.value = res.data.data || []
+    const res = await axios.get("/teacherstudent/gettasklist")
+    const resp = res?.data || {}
+    const code = resp.code ?? resp._code
+    const msg = resp.msg ?? resp._msg ?? "获取授课任务失败"
+
+    if (code === 200) {
+      taskList.value = resp.data || []
     } else {
-      ElMessage.error(res.data?.msg || res.data?._msg || "获取授课任务失败")
+      ElMessage.error(msg)
     }
   } catch (error) {
     console.error("获取授课任务失败：", error)
@@ -328,61 +193,32 @@ const loadTaskList = async () => {
 const loadTableData = async () => {
   loading.value = true
   try {
-    const res = await axios.get("/teacherscore/getlist", {
+    const res = await axios.get("/teacherstudent/getcoursestudents", {
       params: {
         pageIndex: pageIndex.value,
         pageSize: pageSize.value,
         qkey: searchForm.qkey,
-        sctermid: searchForm.sctermid || "",
-        scclassid: searchForm.scclassid || "",
-        sccourseid: searchForm.sccourseid || ""
+        tctermid: searchForm.tctermid || "",
+        tcclassid: searchForm.tcclassid || "",
+        tccourseid: searchForm.tccourseid || ""
       }
     })
 
-    if (res.data && res.data._code === 200) {
-      tableData.value = res.data.data || []
-      total.value = res.data.totalRecord || 0
+    const resp = res?.data || {}
+    const code = resp.code ?? resp._code
+    const msg = resp.msg ?? resp._msg ?? "获取学生列表失败"
+
+    if (code === 200) {
+      tableData.value = resp.data || []
+      total.value = resp.totalRecord || 0
     } else {
-      ElMessage.error(res.data?._msg || "获取成绩列表失败")
+      ElMessage.error(msg)
     }
   } catch (error) {
-    console.error("获取成绩列表失败：", error)
-    ElMessage.error("获取成绩列表失败")
+    console.error("获取学生列表失败：", error)
+    ElMessage.error("获取学生列表失败")
   } finally {
     loading.value = false
-  }
-}
-
-const loadStudentScoreList = async () => {
-  if (!entryForm.sctermid || !entryForm.scclassid || !entryForm.sccourseid) {
-    ElMessage.warning("请先选择学期、班级和课程")
-    return
-  }
-
-  studentLoading.value = true
-  try {
-    const res = await axios.get("/teacherscore/getstudents", {
-      params: {
-        sctermid: entryForm.sctermid,
-        scclassid: entryForm.scclassid,
-        sccourseid: entryForm.sccourseid
-      }
-    })
-
-    if (res.data && (res.data.code === 200 || res.data._code === 200)) {
-      studentTableData.value = (res.data.data || []).map((item) => ({
-        ...item,
-        scscore: item.scscore ?? 0,
-        scstatus: item.scstatus ?? 0
-      }))
-    } else {
-      ElMessage.error(res.data?.msg || res.data?._msg || "获取学生成绩列表失败")
-    }
-  } catch (error) {
-    console.error("获取学生成绩列表失败：", error)
-    ElMessage.error("获取学生成绩列表失败")
-  } finally {
-    studentLoading.value = false
   }
 }
 
@@ -393,20 +229,20 @@ const handleSearch = () => {
 
 const handleReset = () => {
   searchForm.qkey = ""
-  searchForm.sctermid = null
-  searchForm.scclassid = null
-  searchForm.sccourseid = null
+  searchForm.tctermid = null
+  searchForm.tcclassid = null
+  searchForm.tccourseid = null
   pageIndex.value = 1
   loadTableData()
 }
 
 const handleTermChange = () => {
-  searchForm.scclassid = null
-  searchForm.sccourseid = null
+  searchForm.tcclassid = null
+  searchForm.tccourseid = null
 }
 
 const handleClassChange = () => {
-  searchForm.sccourseid = null
+  searchForm.tccourseid = null
 }
 
 const handleCurrentChange = (val) => {
@@ -418,29 +254,6 @@ const handleSizeChange = (val) => {
   pageSize.value = val
   pageIndex.value = 1
   loadTableData()
-}
-
-const handleOpenEntryDialog = () => {
-  entryForm.sctermid = searchForm.sctermid || null
-  entryForm.scclassid = searchForm.scclassid || null
-  entryForm.sccourseid = searchForm.sccourseid || null
-  studentTableData.value = []
-  dialogVisible.value = true
-}
-
-const handleEntryTermChange = () => {
-  entryForm.scclassid = null
-  entryForm.sccourseid = null
-  studentTableData.value = []
-}
-
-const handleEntryClassChange = () => {
-  entryForm.sccourseid = null
-  studentTableData.value = []
-}
-
-const handleSaveScore = async () => {
-  ElMessage.warning("成绩保存接口下一步再接")
 }
 
 onMounted(async () => {
@@ -466,9 +279,5 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
-}
-
-.entry-form {
-  margin-bottom: 16px;
 }
 </style>

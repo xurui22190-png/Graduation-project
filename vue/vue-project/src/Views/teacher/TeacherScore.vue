@@ -1,6 +1,5 @@
 <template>
   <div class="page-box">
-    <!-- 查询区域 -->
     <el-card shadow="never" class="search-card">
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="关键字">
@@ -65,6 +64,18 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="录入状态">
+  <el-select
+    v-model="searchForm.scstatus"
+    placeholder="请选择状态"
+    clearable
+    style="width: 150px"
+  >
+    <el-option label="全部" :value="null" />
+    <el-option label="已录入" :value="1" />
+    <el-option label="未录入" :value="0" />
+  </el-select>
+</el-form-item>
 
         <el-form-item>
           <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -74,7 +85,6 @@
       </el-form>
     </el-card>
 
-    <!-- 列表区域 -->
     <el-card shadow="never" class="table-card">
       <el-table
         v-loading="loading"
@@ -113,7 +123,6 @@
       </div>
     </el-card>
 
-    <!-- 成绩录入弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       title="成绩录入"
@@ -240,7 +249,8 @@ const searchForm = reactive({
   qkey: "",
   sctermid: null,
   scclassid: null,
-  sccourseid: null
+  sccourseid: null,
+  scstatus: null
 })
 
 const entryForm = reactive({
@@ -266,7 +276,6 @@ const buildUniqueOptions = (list, valueKey, labelKey) => {
 
 const filteredTaskList = computed(() => {
   let arr = [...taskList.value]
-
   if (searchForm.sctermid) {
     arr = arr.filter((item) => item.tctermid === searchForm.sctermid)
   }
@@ -318,10 +327,10 @@ const entryCourseList = computed(() => {
 const loadTaskList = async () => {
   try {
     const res = await axios.get("/teacherscore/gettasklist")
-    if (res.data && res.data.code === 200) {
+    if (res.data && (res.data.code === 200 || res.data._code === 200)) {
       taskList.value = res.data.data || []
     } else {
-      ElMessage.error(res.data?.msg || "获取授课任务失败")
+      ElMessage.error(res.data?.msg || res.data?._msg || "获取授课任务失败")
     }
   } catch (error) {
     console.error("获取授课任务失败：", error)
@@ -332,16 +341,17 @@ const loadTaskList = async () => {
 const loadTableData = async () => {
   loading.value = true
   try {
-    const res = await axios.get("/teacherscore/getlist", {
-      params: {
-        pageIndex: pageIndex.value,
-        pageSize: pageSize.value,
-        qkey: searchForm.qkey,
-        sctermid: searchForm.sctermid || "",
-        scclassid: searchForm.scclassid || "",
-        sccourseid: searchForm.sccourseid || ""
-      }
-    })
+    const res = await axios.get("/teacherstudent/getlist", {
+  params: {
+    pageIndex: pageIndex.value,
+    pageSize: pageSize.value,
+    qkey: searchForm.qkey,
+    sctermid: searchForm.sctermid || "",
+    scclassid: searchForm.scclassid || "",
+    sccourseid: searchForm.sccourseid || "",
+    scstatus: searchForm.scstatus
+  }
+})
 
     if (res.data && res.data._code === 200) {
       tableData.value = res.data.data || []
@@ -373,14 +383,26 @@ const loadStudentScoreList = async () => {
       }
     })
 
-    if (res.data && res.data.code === 200) {
-      studentTableData.value = (res.data.data || []).map((item) => ({
-        ...item,
-        scscore: item.scscore ?? 0,
-        scstatus: item.scstatus ?? 0
-      }))
+    const resp = res?.data || {}
+    const code = resp.code ?? resp._code
+    const msg = resp.msg ?? resp._msg ?? "获取学生成绩列表失败"
+    const list = Array.isArray(resp.data) ? resp.data : []
+
+    if (code === 200) {
+      studentTableData.value = list
+  .filter((item) => item && typeof item === "object")
+  .map((item) => ({
+    sid: item.sid ?? null,
+    sno: item.sno ?? "",
+    sname: item.sname ?? "",
+    sclassid: item.sclassid ?? null,
+    cname: item.cname ?? "",
+    scid: item.scid ?? null,
+    scscore: item.scscore ?? null,
+    scstatus: item.scstatus ?? 0
+  }))
     } else {
-      ElMessage.error(res.data?.msg || "获取学生成绩列表失败")
+      ElMessage.error(msg)
     }
   } catch (error) {
     console.error("获取学生成绩列表失败：", error)
@@ -400,6 +422,7 @@ const handleReset = () => {
   searchForm.sctermid = null
   searchForm.scclassid = null
   searchForm.sccourseid = null
+  searchForm.scstatus = null
   pageIndex.value = 1
   loadTableData()
 }
@@ -444,7 +467,65 @@ const handleEntryClassChange = () => {
 }
 
 const handleSaveScore = async () => {
-  ElMessage.warning("成绩保存后端接口还未接入，这里先把前端页面搭好")
+  if (!entryForm.sctermid || !entryForm.scclassid || !entryForm.sccourseid) {
+    ElMessage.warning("请先选择学期、班级和课程")
+    return
+  }
+
+  if (!studentTableData.value || studentTableData.value.length === 0) {
+    ElMessage.warning("请先加载学生数据")
+    return
+  }
+
+  const scoreList = studentTableData.value
+    .filter((item) => item && item.sid)
+    .map((item) => {
+      let scoreValue = item.scscore
+
+      if (scoreValue === "" || scoreValue === undefined) {
+        scoreValue = null
+      }
+
+      if (scoreValue !== null) {
+        scoreValue = Number(scoreValue)
+      }
+
+      return {
+        sid: item.sid,
+        scid: item.scid ?? null,
+        scscore: scoreValue,
+        scstatus: scoreValue === null ? 0 : 1
+      }
+    })
+
+  try {
+    studentLoading.value = true
+
+    const res = await axios.post("/teacherstudent/savescores", {
+      tctermid: entryForm.sctermid,
+      tcclassid: entryForm.scclassid,
+      tccourseid: entryForm.sccourseid,
+      scoreList
+    })
+
+    const resp = res?.data || {}
+    const code = resp.code ?? resp._code
+    const msg = resp.msg ?? resp._msg ?? "保存失败"
+
+    if (code === 200) {
+      ElMessage.success(msg || "保存成功")
+      await loadStudentScoreList()
+      await loadTableData()
+      dialogVisible.value = false
+    } else {
+      ElMessage.error(msg)
+    }
+  } catch (error) {
+    console.error("保存成绩失败：", error)
+    ElMessage.error("保存成绩失败")
+  } finally {
+    studentLoading.value = false
+  }
 }
 
 onMounted(async () => {

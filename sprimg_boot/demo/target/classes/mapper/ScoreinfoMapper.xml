@@ -72,7 +72,7 @@
         order by tc.tcId desc
     </select>
 
-    <select id="getTeacherScoreStudentList" resultType="com.demo.vo.TeacherScoreStudentVo">
+    <select id="getTeacherScoreStudentList" resultType="java.util.HashMap">
         select
             s.sId as sid,
             s.sNo as sno,

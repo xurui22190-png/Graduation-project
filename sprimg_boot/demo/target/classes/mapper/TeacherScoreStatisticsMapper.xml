@@ -6,8 +6,8 @@
 
     <sql id="whereSql">
         WHERE 1=1
-          AND ta.scTeacherId = #{teacherId}
-          AND ta.scStatus = 1
+        AND ta.scTeacherId = #{teacherId}
+        AND ta.scStatus = 1
         <if test="dto.tctermid != null and dto.tctermid != 0">
             AND ta.scTermId = #{dto.tctermid}
         </if>
@@ -21,23 +21,23 @@
 
     <select id="getList" resultType="com.demo.vo.TeacherScoreStatisticsVo">
         SELECT
-            ta.scId AS scid,
-            ta.sid AS sid,
-            ta.sNo AS sno,
-            ta.sName AS sname,
-            ta.sSex AS ssex,
-            ta.sClassId AS sclassid,
-            ta.className AS classname,
-            ta.classCode AS classcode,
-            ta.yYear AS yyear,
-            ta.yTerm AS yterm,
-            ta.yAll AS yall,
-            ta.scCourseId AS sccourseid,
-            ta.crCode AS crcode,
-            ta.crName AS crname,
-            ta.scScore AS scscore,
-            ta.scStatus AS scstatus,
-            DATE_FORMAT(ta.scCreateDate,'%Y-%m-%d %H:%i:%s') AS screatedate
+        ta.scId AS scid,
+        ta.sid AS sid,
+        ta.sNo AS sno,
+        ta.sName AS sname,
+        ta.sSex AS ssex,
+        ta.sClassId AS sclassid,
+        ta.className AS classname,
+        ta.classCode AS classcode,
+        ta.yYear AS yyear,
+        ta.yTerm AS yterm,
+        ta.yAll AS yall,
+        ta.scCourseId AS sccourseid,
+        ta.crCode AS crcode,
+        ta.crName AS crname,
+        ta.scScore AS scscore,
+        ta.scStatus AS scstatus,
+        DATE_FORMAT(ta.scCreateDate,'%Y-%m-%d %H:%i:%s') AS screatedate
         FROM vwscores ta
         <include refid="whereSql"/>
         ORDER BY ta.scId DESC
@@ -52,12 +52,12 @@
 
     <select id="getSummary" resultType="com.demo.vo.TeacherScoreSummaryVo">
         SELECT
-            COUNT(1) AS totalCount,
-            IFNULL(ROUND(AVG(ta.scScore), 2), 0) AS avgScore,
-            IFNULL(MAX(ta.scScore), 0) AS maxScore,
-            IFNULL(MIN(ta.scScore), 0) AS minScore,
-            IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS passRate,
-            IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 85 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS goodRate
+        COUNT(1) AS totalCount,
+        IFNULL(ROUND(AVG(ta.scScore), 2), 0) AS avgScore,
+        IFNULL(MAX(ta.scScore), 0) AS maxScore,
+        IFNULL(MIN(ta.scScore), 0) AS minScore,
+        IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS passRate,
+        IFNULL(ROUND(SUM(CASE WHEN ta.scScore >= 85 THEN 1 ELSE 0 END) * 100.0 / COUNT(1), 2), 0) AS goodRate
         FROM vwscores ta
         <include refid="whereSql"/>
     </select>
@@ -99,8 +99,8 @@
 
     <select id="getClassAvgData" resultType="java.util.HashMap">
         SELECT
-            ta.className AS name,
-            ROUND(AVG(ta.scScore), 2) AS value
+        ta.className AS name,
+        ROUND(AVG(ta.scScore), 2) AS value
         FROM vwscores ta
         <include refid="whereSql"/>
         GROUP BY ta.sClassId, ta.className
@@ -109,8 +109,8 @@
 
     <select id="getTrendData" resultType="java.util.HashMap">
         SELECT
-            ta.yAll AS name,
-            ROUND(AVG(ta.scScore), 2) AS value
+        ta.yAll AS name,
+        ROUND(AVG(ta.scScore), 2) AS value
         FROM vwscores ta
         <include refid="whereSql"/>
         GROUP BY ta.scTermId, ta.yAll
@@ -124,7 +124,7 @@
             yt.yTerm AS yterm,
             yt.yAll AS yall
         FROM teaching t
-        LEFT JOIN yearterm yt ON t.tcTermId = yt.yId
+                 LEFT JOIN yearterm yt ON t.tcTermId = yt.yId
         WHERE t.tcTeacherId = #{teacherId}
         ORDER BY yt.yId ASC
     </select>
@@ -135,7 +135,7 @@
             c.cName AS cname,
             c.cCode AS ccode
         FROM teaching t
-        LEFT JOIN classinfo c ON t.tcClassId = c.cId
+                 LEFT JOIN classinfo c ON t.tcClassId = c.cId
         WHERE t.tcTeacherId = #{teacherId}
         ORDER BY c.cId ASC
     </select>
@@ -146,7 +146,7 @@
             c.crCode AS crcode,
             c.crName AS crname
         FROM teaching t
-        LEFT JOIN courseinfo c ON t.tcCourseId = c.crId
+                 LEFT JOIN courseinfo c ON t.tcCourseId = c.crId
         WHERE t.tcTeacherId = #{teacherId}
         ORDER BY c.crId ASC
     </select>

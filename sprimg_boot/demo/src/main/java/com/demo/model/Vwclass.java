@@ -1,6 +1,8 @@
 package com.demo.model;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
@@ -17,7 +19,7 @@ public class Vwclass implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "班级ID")
-    @TableField("cId")
+    @TableId(value = "cId", type = IdType.INPUT)
     private Integer cid;
 
     @ApiModelProperty(value = "所属专业ID")

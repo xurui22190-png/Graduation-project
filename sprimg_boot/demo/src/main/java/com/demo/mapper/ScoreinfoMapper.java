@@ -22,10 +22,10 @@ public interface ScoreinfoMapper extends BaseMapper<Scoreinfo> {
 
     List<TeacherTaskVo> getTeacherTaskList(@Param("teacherid") Integer teacherid);
 
-    List<TeacherScoreStudentVo> getTeacherScoreStudentList(@Param("teacherid") Integer teacherid,
-                                                           @Param("sctermid") Integer sctermid,
-                                                           @Param("scclassid") Integer scclassid,
-                                                           @Param("sccourseid") Integer sccourseid);
+    List<java.util.Map<String, Object>> getTeacherScoreStudentList(@Param("teacherid") Integer teacherid,
+                                                                   @Param("sctermid") Integer sctermid,
+                                                                   @Param("scclassid") Integer scclassid,
+                                                                   @Param("sccourseid") Integer sccourseid);
 
     Integer checkTeachingAuth(@Param("teacherid") Integer teacherid,
                               @Param("sctermid") Integer sctermid,
