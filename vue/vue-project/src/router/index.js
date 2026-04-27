@@ -119,6 +119,12 @@ const routes = [
         component: () => import("@/Views/score/Statistics.vue"),
         meta: { title: "成绩统计", requireAuth: true },
       },
+      {
+        path: "/academic-warning", // 路由路径
+        name: "AcademicWarning",
+        component: () => import("@/Views/warning/AcademicWarning.vue"),
+        meta: { title: "学业预警大盘", requiresAuth: true },
+      },
 
       // 👇 教师端
       {

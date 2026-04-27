@@ -13,6 +13,7 @@ import com.demo.mapper.TeacherinfoMapper;
 import com.demo.model.Scoreinfo;
 import com.demo.model.Teacherinfo;
 import com.demo.model.Vwteacherstudent;
+import com.demo.service.IDiagnosisService;
 import com.demo.service.TeacherStudentService;
 import com.demo.utils.CommUtil;
 import com.demo.utils.UserToken;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
+import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TeacherStudentServiceImpl implements TeacherStudentService {
 
@@ -38,6 +39,9 @@ public class TeacherStudentServiceImpl implements TeacherStudentService {
 
     @Autowired
     private TeacherinfoMapper teacherinfoMapper;
+
+    @Autowired
+    private IDiagnosisService diagnosisService;
 
     @Autowired
     private ScoreinfoMapper scoreinfoMapper;
@@ -169,6 +173,7 @@ public class TeacherStudentServiceImpl implements TeacherStudentService {
     }
 
     @Override
+    @Transactional // 建议加上事务注解，保证数据一致性
     public ResponseResult saveScores(TeacherStudentScoreSaveDto dto, HttpServletRequest request) {
         try {
             Integer teacherId = getCurrentTeacherId(request);
@@ -243,6 +248,24 @@ public class TeacherStudentServiceImpl implements TeacherStudentService {
 
                     scoreinfoMapper.updateById(scoreinfo);
                 }
+
+                // ================= 毕设核心亮点：智能拦截与知识点明细自动生成 =================
+                // 只有当有成绩时才生成
+                if (scoreValue != null && scoreValue > 0) {
+                    try {
+                        // 调用诊断引擎，自动将总分拆解为知识点得分，存入 score_detail 表
+                        diagnosisService.generateSimulatedDetails(
+                                item.getSid(), // 学生ID
+                                dto.getTccourseid(), // 课程ID
+                                scoreValue // 将总分传入
+                        );
+                        System.out.println("====== 🚀学情引擎：已成功为学生 " + item.getSid() + " 生成课程 " + dto.getTccourseid() + " 的明细！======");
+                    } catch (Exception e) {
+                        // 加上 try-catch 防止生成失败影响老师正常录入总分
+                        System.err.println("====== ❌学情引擎警告：生成明细失败：" + e.getMessage() + " ======");
+                    }
+                }
+                // ==============================================================================
             }
 
             return ResponseResult.success("保存成功", null);

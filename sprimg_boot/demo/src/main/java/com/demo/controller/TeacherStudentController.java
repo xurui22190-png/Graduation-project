@@ -4,6 +4,7 @@ import com.demo.common.ResponsePageResult;
 import com.demo.common.ResponseResult;
 import com.demo.dto.TeacherStudentDto;
 import com.demo.dto.TeacherStudentScoreSaveDto;
+import com.demo.service.IDiagnosisService;
 import com.demo.service.TeacherStudentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,10 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/teacherstudent")
 @Api(tags = "教师查看学生接口")
+
 public class TeacherStudentController {
 
     @Autowired
     private TeacherStudentService teacherStudentService;
+    @Autowired
+    private IDiagnosisService diagnosisService;
 
     @GetMapping("/getlist")
     @ApiOperation("教师查看自己授课下的学生列表")

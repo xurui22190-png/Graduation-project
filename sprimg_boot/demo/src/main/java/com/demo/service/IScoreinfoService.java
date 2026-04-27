@@ -18,4 +18,6 @@ public interface IScoreinfoService extends IService<Scoreinfo> {
                                               Integer scclassid,
                                               Integer sccourseid,
                                               HttpServletRequest request);
+
+    ResponseResult getStudentScoreList(Integer studentId, String qkey, Integer termid);
 }

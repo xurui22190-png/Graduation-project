@@ -79,6 +79,10 @@
         <i class="el-icon-data-analysis"></i>
         <span>成绩统计</span>
       </el-menu-item>
+      <el-menu-item index="/academic-warning">
+        <i class="el-icon-data-analysis"></i>
+        <span>成绩预警大盘</span>
+      </el-menu-item>
     </el-sub-menu>
 
     <!-- 公告管理 -->

@@ -11,11 +11,35 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 23/04/2026 13:42:55
+ Date: 27/04/2026 20:52:15
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for academic_warning
+-- ----------------------------
+DROP TABLE IF EXISTS `academic_warning`;
+CREATE TABLE `academic_warning`  (
+  `wId` int NOT NULL AUTO_INCREMENT,
+  `wStudentId` int NULL DEFAULT NULL COMMENT '学生ID',
+  `wCourseId` int NULL DEFAULT NULL COMMENT '课程ID',
+  `wRiskLevel` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '风险等级：高风险(红)、中风险(橙)、低风险(黄)',
+  `wProbability` double NULL DEFAULT NULL COMMENT '不及格预测概率(0.0-1.0)',
+  `wReason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '预警原因（如：平时分过低、出勤率不足）',
+  `wStatus` int NULL DEFAULT 0 COMMENT '处理状态：0-未处理，1-已谈话，2-已消除',
+  `wCreateDate` datetime NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`wId`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of academic_warning
+-- ----------------------------
+INSERT INTO `academic_warning` VALUES (21, 48, 4, '低风险', 0.3258, 'AI模型检测到该生平时成绩呈下滑趋势，且出勤率低于安全阈值，预估不及格风险达 33%', 1, '2026-04-27 15:02:10');
+INSERT INTO `academic_warning` VALUES (22, 14, 1, '低风险', 0.1593, 'AI模型检测到该生平时成绩呈下滑趋势，且出勤率低于安全阈值，预估不及格风险达 16%', 0, '2026-04-27 15:16:57');
+INSERT INTO `academic_warning` VALUES (23, 37, 1, '低风险', 0.1073, 'AI模型检测到该生平时成绩呈下滑趋势，且出勤率低于安全阈值，预估不及格风险达 11%', 0, '2026-04-27 15:16:57');
+INSERT INTO `academic_warning` VALUES (24, 43, 1, '低风险', 0.1128, 'AI模型检测到该生平时成绩呈下滑趋势，且出勤率低于安全阈值，预估不及格风险达 11%', 0, '2026-04-27 15:16:57');
 
 -- ----------------------------
 -- Table structure for classinfo
@@ -160,6 +184,34 @@ INSERT INTO `courseinfo` VALUES (26, 'KC026', '管理学原理', 2001, 3.0, 48, 
 INSERT INTO `courseinfo` VALUES (27, 'KC027', '市场营销学', 2001, 3.0, 48, '选修', '考查', '企业营销方向课程', 1, '2026-03-21 14:08:46', '2026-03-21 14:08:46');
 
 -- ----------------------------
+-- Table structure for knowledge_point
+-- ----------------------------
+DROP TABLE IF EXISTS `knowledge_point`;
+CREATE TABLE `knowledge_point`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `course_id` int NOT NULL COMMENT '所属课程ID (关联 courseinfo表)',
+  `point_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '知识点名称',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '课程知识点表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of knowledge_point
+-- ----------------------------
+INSERT INTO `knowledge_point` VALUES (1, 1, '基础概念与定义', '2026-04-23 16:55:46');
+INSERT INTO `knowledge_point` VALUES (2, 1, '核心公式与定理', '2026-04-23 16:55:46');
+INSERT INTO `knowledge_point` VALUES (3, 1, '综合应用与计算', '2026-04-23 16:55:46');
+INSERT INTO `knowledge_point` VALUES (4, 1, '拓展与创新思维', '2026-04-23 16:55:46');
+INSERT INTO `knowledge_point` VALUES (5, 2, '基础语法与数据类型', '2026-04-23 17:57:54');
+INSERT INTO `knowledge_point` VALUES (6, 2, '面向对象编程思想', '2026-04-23 17:57:54');
+INSERT INTO `knowledge_point` VALUES (7, 2, '集合框架与泛型', '2026-04-23 17:57:54');
+INSERT INTO `knowledge_point` VALUES (8, 2, '异常处理与多线程', '2026-04-23 17:57:54');
+INSERT INTO `knowledge_point` VALUES (9, 4, '软件生命周期与过程模型', '2026-04-24 15:09:11');
+INSERT INTO `knowledge_point` VALUES (10, 4, '需求分析与建模', '2026-04-24 15:09:11');
+INSERT INTO `knowledge_point` VALUES (11, 4, '软件架构与系统设计', '2026-04-24 15:09:11');
+INSERT INTO `knowledge_point` VALUES (12, 4, '软件测试与质量保证', '2026-04-24 15:09:11');
+
+-- ----------------------------
 -- Table structure for majorinfo
 -- ----------------------------
 DROP TABLE IF EXISTS `majorinfo`;
@@ -237,7 +289,7 @@ CREATE TABLE `noticeinfo`  (
   `nUpdateTime` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `nIsDelete` int NULL DEFAULT 0 COMMENT '是否删除：0否 1是',
   PRIMARY KEY (`nId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '公告信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '公告信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of noticeinfo
@@ -246,6 +298,86 @@ INSERT INTO `noticeinfo` VALUES (1, '关于期中考试安排的通知', '请各
 INSERT INTO `noticeinfo` VALUES (2, '系统维护公告', '本周六晚22:00至23:30系统将进行维护，期间部分功能可能无法使用。', '系统公告', 0, 1, 1, '管理员', '2026-03-23 17:26:31', '2026-03-23 17:26:31', 0);
 INSERT INTO `noticeinfo` VALUES (3, '关于提交课程作业的提醒', '请相关课程学生于本周日前完成作业提交，逾期将影响平时成绩。', '课程通知', 0, 1, 2, '张老师', '2026-03-23 17:26:31', '2026-03-23 17:26:31', 0);
 INSERT INTO `noticeinfo` VALUES (4, '测试', '测试', '系统公告', 1, 1, 1, '管理员', '2026-03-23 09:35:49', '2026-03-23 09:35:49', 0);
+INSERT INTO `noticeinfo` VALUES (5, '【专属推送】【学业预警】请关注您的近期学习状态', '亲爱的 胡雪 同学：\n\n系统检测到您在近期学习中存在一定风险。\nAI 诊断分析如下：\nAI模型检测到该生平时成绩呈下滑趋势，且出勤率低于安全阈值，预估不及格风险达 16%\n\n请您务必引起重视，并尽快与任课老师或辅导员取得联系，及时调整学习计划！', '学业预警', 1, 1, 0, 'AI学业指导中心', '2026-04-27 15:39:20', '2026-04-27 15:39:19', 0);
+
+-- ----------------------------
+-- Table structure for score_detail
+-- ----------------------------
+DROP TABLE IF EXISTS `score_detail`;
+CREATE TABLE `score_detail`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `student_id` int NOT NULL COMMENT '学生ID (关联 studentinfo)',
+  `course_id` int NOT NULL COMMENT '课程ID (关联 courseinfo)',
+  `point_id` int NOT NULL COMMENT '知识点ID (关联 knowledge_point)',
+  `max_score` double NULL DEFAULT 100 COMMENT '该知识点基准满分(默认100)',
+  `actual_score` double NOT NULL COMMENT '学生该知识点实际得分',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '录入时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 369 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '学生知识点成绩明细表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of score_detail
+-- ----------------------------
+INSERT INTO `score_detail` VALUES (129, 33, 2, 5, 100, 84, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (130, 33, 2, 6, 100, 82.6, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (131, 33, 2, 7, 100, 68.4, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (132, 33, 2, 8, 100, 90.1, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (133, 34, 2, 5, 100, 62.8, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (134, 34, 2, 6, 100, 72.6, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (135, 34, 2, 7, 100, 86.5, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (136, 34, 2, 8, 100, 67.4, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (137, 35, 2, 5, 100, 59.7, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (138, 35, 2, 6, 100, 58.8, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (139, 35, 2, 7, 100, 48.9, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (140, 35, 2, 8, 100, 38.7, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (141, 36, 2, 5, 100, 52, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (142, 36, 2, 6, 100, 62.6, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (143, 36, 2, 7, 100, 58.1, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (144, 36, 2, 8, 100, 43.3, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (145, 37, 2, 5, 100, 53.8, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (146, 37, 2, 6, 100, 69.4, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (147, 37, 2, 7, 100, 52, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (148, 37, 2, 8, 100, 38.8, '2026-04-24 22:25:03');
+INSERT INTO `score_detail` VALUES (329, 6, 2, 5, 100, 46.1, '2026-04-25 14:42:11');
+INSERT INTO `score_detail` VALUES (330, 6, 2, 6, 100, 51.3, '2026-04-25 14:42:11');
+INSERT INTO `score_detail` VALUES (331, 6, 2, 7, 100, 42.9, '2026-04-25 14:42:11');
+INSERT INTO `score_detail` VALUES (332, 6, 2, 8, 100, 61.3, '2026-04-25 14:42:11');
+INSERT INTO `score_detail` VALUES (333, 12, 4, 9, 100, 65.1, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (334, 12, 4, 10, 100, 91.6, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (335, 12, 4, 11, 100, 87.7, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (336, 12, 4, 12, 100, 87.1, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (337, 13, 4, 9, 100, 52.3, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (338, 13, 4, 10, 100, 44.9, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (339, 13, 4, 11, 100, 47, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (340, 13, 4, 12, 100, 53.6, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (341, 14, 4, 9, 100, 75.8, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (342, 14, 4, 10, 100, 82.5, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (343, 14, 4, 11, 100, 87.8, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (344, 14, 4, 12, 100, 68, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (345, 39, 4, 9, 100, 78.3, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (346, 39, 4, 10, 100, 77.7, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (347, 39, 4, 11, 100, 89.6, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (348, 39, 4, 12, 100, 72.1, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (349, 40, 4, 9, 100, 82, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (350, 40, 4, 10, 100, 76, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (351, 40, 4, 11, 100, 79.2, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (352, 40, 4, 12, 100, 68.6, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (353, 42, 4, 9, 100, 87.3, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (354, 42, 4, 10, 100, 89.3, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (355, 42, 4, 11, 100, 87.9, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (356, 42, 4, 12, 100, 88.8, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (357, 43, 4, 9, 100, 71.4, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (358, 43, 4, 10, 100, 56.6, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (359, 43, 4, 11, 100, 42.4, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (360, 43, 4, 12, 100, 53.4, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (361, 44, 4, 9, 100, 47.5, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (362, 44, 4, 10, 100, 63.9, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (363, 44, 4, 11, 100, 39.4, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (364, 44, 4, 12, 100, 51.8, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (365, 48, 4, 9, 100, 68.5, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (366, 48, 4, 10, 100, 66.7, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (367, 48, 4, 11, 100, 29.7, '2026-04-25 18:19:27');
+INSERT INTO `score_detail` VALUES (368, 48, 4, 12, 100, 40.4, '2026-04-25 18:19:27');
 
 -- ----------------------------
 -- Table structure for scoreinfo
@@ -262,22 +394,18 @@ CREATE TABLE `scoreinfo`  (
   `scCreateDate` datetime NULL DEFAULT NULL COMMENT '登记时间',
   `scTeacherId` int NULL DEFAULT NULL COMMENT '登记老师ID',
   PRIMARY KEY (`scId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 146 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '成绩信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 170 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '成绩信息表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of scoreinfo
 -- ----------------------------
 INSERT INTO `scoreinfo` VALUES (1, 8, 1, 2, 1, 85.0, 1, '2026-03-21 14:59:01', 1);
 INSERT INTO `scoreinfo` VALUES (2, 9, 1, 2, 1, 78.5, 1, '2026-03-21 14:59:01', 1);
-INSERT INTO `scoreinfo` VALUES (3, 10, 1, 2, 1, 92.0, 1, '2026-03-21 14:59:01', 1);
 INSERT INTO `scoreinfo` VALUES (4, 8, 1, 2, 2, 80.0, 1, '2026-03-21 14:59:01', 2);
 INSERT INTO `scoreinfo` VALUES (5, 9, 1, 2, 2, 74.5, 1, '2026-03-21 14:59:01', 2);
-INSERT INTO `scoreinfo` VALUES (6, 10, 1, 2, 2, 88.0, 1, '2026-03-21 14:59:01', 2);
-INSERT INTO `scoreinfo` VALUES (7, 11, 2, 3, 1, 76.0, 1, '2026-03-21 14:59:01', 1);
 INSERT INTO `scoreinfo` VALUES (8, 12, 2, 3, 1, 84.5, 1, '2026-03-21 14:59:01', 1);
 INSERT INTO `scoreinfo` VALUES (9, 13, 2, 3, 1, 91.0, 1, '2026-03-21 14:59:01', 1);
 INSERT INTO `scoreinfo` VALUES (10, 14, 2, 3, 1, 67.0, 1, '2026-03-21 14:59:01', 1);
-INSERT INTO `scoreinfo` VALUES (11, 11, 2, 3, 3, 82.0, 1, '2026-03-21 14:59:01', 3);
 INSERT INTO `scoreinfo` VALUES (12, 12, 2, 3, 3, 79.5, 1, '2026-03-21 14:59:01', 3);
 INSERT INTO `scoreinfo` VALUES (13, 13, 2, 3, 3, 95.0, 1, '2026-03-21 14:59:01', 3);
 INSERT INTO `scoreinfo` VALUES (14, 14, 2, 3, 3, 70.0, 1, '2026-03-21 14:59:01', 3);
@@ -308,9 +436,6 @@ INSERT INTO `scoreinfo` VALUES (53, 39, 2, 3, 3, 83.0, 1, '2026-03-25 11:15:00',
 INSERT INTO `scoreinfo` VALUES (54, 40, 2, 3, 1, 85.0, 1, '2026-03-25 11:15:00', 1);
 INSERT INTO `scoreinfo` VALUES (55, 40, 2, 3, 2, 87.5, 1, '2026-03-25 11:15:00', 2);
 INSERT INTO `scoreinfo` VALUES (56, 40, 2, 3, 3, 89.0, 1, '2026-03-25 11:15:00', 3);
-INSERT INTO `scoreinfo` VALUES (57, 41, 2, 3, 1, 72.0, 1, '2026-03-25 11:15:00', 1);
-INSERT INTO `scoreinfo` VALUES (58, 41, 2, 3, 2, 74.0, 1, '2026-03-25 11:15:00', 2);
-INSERT INTO `scoreinfo` VALUES (59, 41, 2, 3, 3, 68.5, 1, '2026-03-25 11:15:00', 3);
 INSERT INTO `scoreinfo` VALUES (60, 42, 2, 3, 1, 90.0, 1, '2026-03-25 11:15:00', 1);
 INSERT INTO `scoreinfo` VALUES (61, 42, 2, 3, 2, 92.0, 1, '2026-03-25 11:15:00', 2);
 INSERT INTO `scoreinfo` VALUES (62, 42, 2, 3, 3, 88.0, 1, '2026-03-25 11:15:00', 3);
@@ -337,7 +462,6 @@ INSERT INTO `scoreinfo` VALUES (82, 34, 4, 4, 3, 0.0, 0, '2026-03-25 11:40:00', 
 INSERT INTO `scoreinfo` VALUES (83, 35, 4, 4, 3, 0.0, 0, '2026-03-25 11:40:00', 10);
 INSERT INTO `scoreinfo` VALUES (84, 39, 4, 3, 2, 0.0, 0, '2026-03-25 11:40:00', 2);
 INSERT INTO `scoreinfo` VALUES (85, 40, 4, 3, 2, 0.0, 0, '2026-03-25 11:40:00', 2);
-INSERT INTO `scoreinfo` VALUES (86, 41, 4, 3, 2, 0.0, 0, '2026-03-25 11:40:00', 2);
 INSERT INTO `scoreinfo` VALUES (87, 1, 2, 1, 1, 89.0, 1, '2026-03-26 10:00:00', 1);
 INSERT INTO `scoreinfo` VALUES (88, 1, 2, 1, 2, 86.5, 1, '2026-03-26 10:00:00', 2);
 INSERT INTO `scoreinfo` VALUES (89, 1, 2, 1, 14, 82.0, 1, '2026-03-26 10:00:00', 3);
@@ -348,11 +472,6 @@ INSERT INTO `scoreinfo` VALUES (93, 2, 2, 1, 8, 85.5, 1, '2026-03-26 10:05:00', 
 INSERT INTO `scoreinfo` VALUES (94, 2, 2, 1, 16, 79.0, 1, '2026-03-26 10:05:00', 10);
 INSERT INTO `scoreinfo` VALUES (95, 2, 2, 1, 20, 88.0, 1, '2026-03-26 10:05:00', 10);
 INSERT INTO `scoreinfo` VALUES (96, 2, 2, 1, 25, 93.0, 1, '2026-03-26 10:05:00', 12);
-INSERT INTO `scoreinfo` VALUES (97, 11, 3, 3, 1, 78.0, 1, '2026-03-26 10:10:00', 1);
-INSERT INTO `scoreinfo` VALUES (98, 11, 3, 3, 4, 81.5, 1, '2026-03-26 10:10:00', 4);
-INSERT INTO `scoreinfo` VALUES (99, 11, 3, 3, 14, 76.0, 1, '2026-03-26 10:10:00', 3);
-INSERT INTO `scoreinfo` VALUES (100, 11, 3, 3, 20, 83.0, 1, '2026-03-26 10:10:00', 10);
-INSERT INTO `scoreinfo` VALUES (101, 11, 3, 3, 24, 80.0, 1, '2026-03-26 10:10:00', 12);
 INSERT INTO `scoreinfo` VALUES (102, 12, 3, 3, 2, 92.0, 1, '2026-03-26 10:15:00', 2);
 INSERT INTO `scoreinfo` VALUES (103, 12, 3, 3, 9, 89.5, 1, '2026-03-26 10:15:00', 3);
 INSERT INTO `scoreinfo` VALUES (104, 12, 3, 3, 16, 90.0, 1, '2026-03-26 10:15:00', 10);
@@ -375,12 +494,6 @@ INSERT INTO `scoreinfo` VALUES (120, 1, 4, 1, 4, 86.0, 1, '2026-03-26 14:00:00',
 INSERT INTO `scoreinfo` VALUES (121, 1, 4, 1, 5, 82.5, 1, '2026-03-26 14:00:00', 1);
 INSERT INTO `scoreinfo` VALUES (122, 1, 4, 1, 6, 87.5, 1, '2026-03-26 14:00:00', 2);
 INSERT INTO `scoreinfo` VALUES (123, 1, 4, 1, 7, 89.0, 1, '2026-03-26 14:00:00', 2);
-INSERT INTO `scoreinfo` VALUES (124, 11, 4, 3, 8, 85.0, 1, '2026-03-26 14:05:00', 2);
-INSERT INTO `scoreinfo` VALUES (125, 11, 4, 3, 9, 83.5, 1, '2026-03-26 14:05:00', 2);
-INSERT INTO `scoreinfo` VALUES (126, 11, 4, 3, 10, 90.0, 1, '2026-03-26 14:05:00', 3);
-INSERT INTO `scoreinfo` VALUES (127, 11, 4, 3, 11, 88.0, 1, '2026-03-26 14:05:00', 3);
-INSERT INTO `scoreinfo` VALUES (128, 11, 4, 3, 12, 84.0, 1, '2026-03-26 14:05:00', 3);
-INSERT INTO `scoreinfo` VALUES (129, 11, 4, 3, 13, 86.5, 1, '2026-03-26 14:05:00', 3);
 INSERT INTO `scoreinfo` VALUES (131, 14, 4, 3, 14, 81.0, 1, '2026-03-26 14:10:00', 3);
 INSERT INTO `scoreinfo` VALUES (132, 14, 4, 3, 16, 85.0, 1, '2026-03-26 14:10:00', 10);
 INSERT INTO `scoreinfo` VALUES (133, 14, 4, 3, 17, 82.0, 1, '2026-03-26 14:10:00', 10);
@@ -393,6 +506,29 @@ INSERT INTO `scoreinfo` VALUES (141, 2, 4, 1, 23, 89.0, 1, '2026-03-26 14:15:00'
 INSERT INTO `scoreinfo` VALUES (142, 2, 4, 1, 24, 91.5, 1, '2026-03-26 14:15:00', 12);
 INSERT INTO `scoreinfo` VALUES (143, 2, 4, 1, 25, 93.0, 1, '2026-03-26 14:15:00', 12);
 INSERT INTO `scoreinfo` VALUES (145, 47, 4, 2, 1, 80.0, 1, '2026-04-21 20:17:39', 1);
+INSERT INTO `scoreinfo` VALUES (146, 12, 3, 3, 4, 79.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (147, 13, 3, 3, 4, 62.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (148, 14, 3, 3, 4, 77.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (149, 39, 3, 3, 4, 77.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (150, 40, 3, 3, 4, 79.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (152, 42, 3, 3, 4, 93.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (153, 43, 3, 3, 4, 66.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (154, 44, 3, 3, 4, 67.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (155, 48, 3, 3, 4, 57.0, 1, '2026-04-23 14:16:15', 1);
+INSERT INTO `scoreinfo` VALUES (156, 45, 4, 2, 1, 80.0, 1, '2026-04-23 14:30:23', 1);
+INSERT INTO `scoreinfo` VALUES (157, 33, 2, 4, 2, 77.0, 1, '2026-04-23 17:54:09', 1);
+INSERT INTO `scoreinfo` VALUES (158, 34, 2, 4, 2, 77.0, 1, '2026-04-23 17:54:09', 1);
+INSERT INTO `scoreinfo` VALUES (159, 35, 2, 4, 2, 60.0, 1, '2026-04-23 17:54:09', 1);
+INSERT INTO `scoreinfo` VALUES (160, 36, 2, 4, 2, 61.0, 1, '2026-04-23 17:54:09', 1);
+INSERT INTO `scoreinfo` VALUES (161, 37, 2, 4, 2, 66.0, 1, '2026-04-23 17:54:09', 1);
+INSERT INTO `scoreinfo` VALUES (162, 6, 2, 2, 2, 61.0, 1, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (163, 7, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (164, 8, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (165, 9, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (166, 38, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (167, 45, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (168, 46, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
+INSERT INTO `scoreinfo` VALUES (169, 47, 2, 2, 2, 0.0, 0, '2026-04-24 14:53:09', 1);
 
 -- ----------------------------
 -- Table structure for studentinfo
@@ -424,7 +560,6 @@ INSERT INTO `studentinfo` VALUES (6, '202300106', '赵敏', '女', 2, '138000100
 INSERT INTO `studentinfo` VALUES (7, '202300107', '黄涛', '男', 2, '13800010007', '410101200507074511', '河南省焦作市解放区', '2026-03-20 22:48:14', 34);
 INSERT INTO `studentinfo` VALUES (8, '202300108', '周洁', '女', 2, '13800010008', '410101200508085026', '河南省许昌市魏都区', '2026-03-20 22:48:14', 35);
 INSERT INTO `studentinfo` VALUES (9, '202300109', '吴昊', '男', 2, '13800010009', '410101200509095438', '河南省平顶山市新华区', '2026-03-20 22:48:14', 36);
-INSERT INTO `studentinfo` VALUES (11, '202300111', '孙磊', '男', 3, '13800010011', '410101200511117851', '河南省商丘市梁园区', '2026-03-20 22:48:14', 38);
 INSERT INTO `studentinfo` VALUES (12, '202300112', '马琳', '女', 3, '13800010012', '410101200512128462', '河南省信阳市浉河区', '2026-03-20 22:48:14', 39);
 INSERT INTO `studentinfo` VALUES (13, '202300113', '朱强', '男', 3, '13800010013', '410101200601139274', '河南省周口市川汇区', '2026-03-20 22:48:14', 40);
 INSERT INTO `studentinfo` VALUES (14, '202300114', '胡雪', '女', 3, '13800010014', '410101200602140685', '河南省驻马店市驿城区', '2026-03-20 22:48:14', 41);
@@ -438,7 +573,6 @@ INSERT INTO `studentinfo` VALUES (37, '202300119', '郑凯', '男', 4, '13800010
 INSERT INTO `studentinfo` VALUES (38, '202300120', '宋雨欣', '女', 2, '13800010020', '410101200608206941', '河南省商丘市梁园区', '2026-03-25 10:00:00', 86);
 INSERT INTO `studentinfo` VALUES (39, '202300121', '杜浩', '男', 3, '13800010021', '410101200609218152', '河南省信阳市浉河区', '2026-03-25 10:00:00', 87);
 INSERT INTO `studentinfo` VALUES (40, '202300122', '潘婷', '女', 3, '13800010022', '410101200610229363', '河南省周口市川汇区', '2026-03-25 10:00:00', 88);
-INSERT INTO `studentinfo` VALUES (41, '202300123', '韩磊', '男', 3, '13800010023', '410101200611230574', '河南省平顶山市新华区', '2026-03-25 10:00:00', 89);
 INSERT INTO `studentinfo` VALUES (42, '202300124', '曹雪', '女', 3, '13800010024', '410101200612241785', '河南省焦作市解放区', '2026-03-25 10:00:00', 90);
 INSERT INTO `studentinfo` VALUES (43, '202300125', '彭宇', '男', 3, '13800010025', '410101200701251996', '河南省安阳市文峰区', '2026-03-25 10:00:00', 91);
 INSERT INTO `studentinfo` VALUES (44, '202300126', '苏雯', '女', 3, '13800010026', '410101200702262108', '河南省开封市龙亭区', '2026-03-25 10:00:00', 92);
@@ -542,7 +676,6 @@ CREATE TABLE `userinfo`  (
 -- ----------------------------
 INSERT INTO `userinfo` VALUES (1, 'admin', '123456', '管理员', '男', '15328da3-17ef-4d8a-a94b-b4b00823b0bb.jpg', 3, NULL);
 INSERT INTO `userinfo` VALUES (2, 'xiaozhang', '123456', '校长1', '男', 'string', 3, '2026-03-13 06:38:07');
-INSERT INTO `userinfo` VALUES (38, '202300111', '123456', '孙磊', NULL, NULL, 1, '2026-03-21 15:31:07');
 INSERT INTO `userinfo` VALUES (39, '202300112', '123456', '马琳', NULL, NULL, 1, '2026-03-21 15:31:07');
 INSERT INTO `userinfo` VALUES (40, '202300113', '123456', '朱强', NULL, NULL, 1, '2026-03-21 15:31:07');
 INSERT INTO `userinfo` VALUES (41, '202300114', '123456', '胡雪', NULL, NULL, 1, '2026-03-21 15:31:07');
@@ -578,7 +711,6 @@ INSERT INTO `userinfo` VALUES (85, '202300119', '123456', '郑凯', '男', NULL,
 INSERT INTO `userinfo` VALUES (86, '202300120', '123456', '宋雨欣', '女', NULL, 1, '2026-03-25 10:05:00');
 INSERT INTO `userinfo` VALUES (87, '202300121', '123456', '杜浩', '男', NULL, 1, '2026-03-25 10:05:00');
 INSERT INTO `userinfo` VALUES (88, '202300122', '123456', '潘婷', '女', NULL, 1, '2026-03-25 10:05:00');
-INSERT INTO `userinfo` VALUES (89, '202300123', '123456', '韩磊', '男', NULL, 1, '2026-03-25 10:05:00');
 INSERT INTO `userinfo` VALUES (90, '202300124', '123456', '曹雪', '女', NULL, 1, '2026-03-25 10:05:00');
 INSERT INTO `userinfo` VALUES (91, '202300125', '123456', '彭宇', '男', NULL, 1, '2026-03-25 10:05:00');
 INSERT INTO `userinfo` VALUES (92, '202300126', '123456', '苏雯', '女', NULL, 1, '2026-03-25 10:05:00');

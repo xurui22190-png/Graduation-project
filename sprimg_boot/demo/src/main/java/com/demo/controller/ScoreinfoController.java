@@ -180,4 +180,6 @@ public class ScoreinfoController {
         boolean res = scoreinfoService.removeById(scid);
         return res ? ResponseResult.success("删除成功", null) : ResponseResult.Fail("删除失败");
     }
+
+
 }
