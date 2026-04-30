@@ -1,23 +1,31 @@
 package com.demo.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.demo.common.ResponsePageResult;
 import com.demo.common.ResponseResult;
+import com.demo.dto.ScoreExcelDto;
 import com.demo.dto.ScoreinfoDto;
+import com.demo.mapper.StudentinfoMapper;
 import com.demo.model.Scoreinfo;
+import com.demo.model.Studentinfo;
 import com.demo.model.Vwscores;
 import com.demo.service.IScoreinfoService;
 import com.demo.service.ScoreinfoService;
 import com.demo.service.VwscoresService;
+import com.demo.service.impl.ScoreinfoServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/scoreinfo")
@@ -29,6 +37,9 @@ public class ScoreinfoController {
 
     @Autowired
     private VwscoresService vwscoresService;
+    @Autowired
+    private StudentinfoMapper studentinfoMapper;
+
 
     @GetMapping("getlist")
     @ApiOperation("获取成绩分页列表")
@@ -36,6 +47,7 @@ public class ScoreinfoController {
         Page<Vwscores> pager = new Page<>();
         pager.setCurrent(query.getPageIndex());
         pager.setSize(query.getPageSize());
+
 
         LambdaQueryWrapper<Vwscores> wrapper = new LambdaQueryWrapper<>();
 
@@ -179,6 +191,73 @@ public class ScoreinfoController {
 
         boolean res = scoreinfoService.removeById(scid);
         return res ? ResponseResult.success("删除成功", null) : ResponseResult.Fail("删除失败");
+    }
+    // 在 Controller 里，确保它是这样调用 Service 的：
+    @PostMapping("saveScoreList")
+    @ApiOperation("教师端批量保存并智能拆解成绩")
+    public ResponseResult saveScoreList(@RequestBody List<Scoreinfo> list) {
+        if (list == null || list.isEmpty()) {
+            return ResponseResult.Fail("提交的成绩数据为空");
+        }
+        // 直接调用接口里的方法，优雅且规范！
+        return scoreinfoService.saveTeacherScores(list);
+    }
+    @PostMapping("importScores")
+    @ApiOperation("Excel批量导入成绩并触发AI拆解")
+    public ResponseResult importScores(@RequestParam("file") MultipartFile file,
+                                       @RequestParam("sctermid") Integer sctermid,
+                                       @RequestParam("scclassid") Integer scclassid,
+                                       @RequestParam("sccourseid") Integer sccourseid) {
+        if (file.isEmpty()) {
+            return ResponseResult.Fail("上传的文件为空");
+        }
+
+        try {
+            // 1. 使用 EasyExcel 同步读取 Excel 数据
+            List<ScoreExcelDto> excelDataList = EasyExcel.read(file.getInputStream())
+                    .head(ScoreExcelDto.class)
+                    .sheet()
+                    .doReadSync();
+
+            if (excelDataList == null || excelDataList.isEmpty()) {
+                return ResponseResult.Fail("Excel中没有读取到数据");
+            }
+
+            List<Scoreinfo> scoreinfoList = new ArrayList<>();
+
+            // 2. 遍历 Excel 数据，转换为我们数据库需要的 Scoreinfo 实体
+            for (ScoreExcelDto excelData : excelDataList) {
+                if (excelData.getSno() == null || excelData.getScscore() == null) {
+                    continue; // 跳过空行
+                }
+
+                // 通过学号查询真实的 sid (这里需要用到你的 studentinfoMapper，如果没有注入请在Controller顶层注入)
+                // 假设你的学生表 Mapper 是 studentinfoMapper，实体是 Studentinfo
+                Studentinfo student = studentinfoMapper.selectOne(
+                        new LambdaQueryWrapper<Studentinfo>().eq(Studentinfo::getSno, excelData.getSno())
+                );
+
+                if (student != null) {
+                    Scoreinfo score = new Scoreinfo();
+                    score.setScstudentid(student.getSid()); // 真实的系统学生ID
+                    score.setSctermid(sctermid);
+                    score.setScclassid(scclassid);
+                    score.setSccourseid(sccourseid);
+                    score.setScscore(java.math.BigDecimal.valueOf(excelData.getScscore()));
+                    score.setScstatus(1); // 标记为已录入
+                    score.setSccreatedate(LocalDateTime.now());
+
+                    scoreinfoList.add(score);
+                }
+            }
+
+            // 3. 🚀 见证奇迹的时刻：把组装好的列表，交给我们的魔法引擎去逆向推演和 AI 拆解！
+            return ((ScoreinfoServiceImpl) scoreinfoService).saveTeacherScores(scoreinfoList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseResult.Fail("Excel导入失败，请检查模板格式：" + e.getMessage());
+        }
     }
 
 

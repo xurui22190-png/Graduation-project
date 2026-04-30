@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.NoticeinfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Noticeinfo">
+        <id column="nId" property="nid" />
+        <result column="nTitle" property="ntitle" />
+        <result column="nContent" property="ncontent" />
+        <result column="nCreateDate" property="ncreatedate" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        nId, nTitle, nContent, nCreateDate
+    </sql>
+
+</mapper>

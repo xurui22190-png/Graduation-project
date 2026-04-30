@@ -12,14 +12,19 @@ import com.demo.model.Teacherinfo;
 import com.demo.model.Vwscores;
 import com.demo.service.IScoreinfoService;
 import com.demo.service.TeacherinfoService;
+import com.demo.service.IDiagnosisService; // 💡 引入AI诊断服务
 import com.demo.utils.CommUtil;
 import com.demo.utils.UserToken;
 import com.demo.vo.TeacherScoreVo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class ScoreinfoServiceImpl
@@ -37,6 +42,11 @@ public class ScoreinfoServiceImpl
 
     @Resource
     private com.demo.mapper.VwscoresMapper vwscoresMapper;
+    // 在类开头的其他 @Resource 下方添加
+    @Resource
+    private com.demo.mapper.TeachingMapper teachingMapper;
+    @Resource
+    private IDiagnosisService diagnosisService; // 💡 注入你的AI知识点拆解引擎
 
 
     private Integer getCurrentTeacherId(HttpServletRequest request) {
@@ -111,8 +121,7 @@ public class ScoreinfoServiceImpl
     }
 
     @Override
-    public com.demo.common.ResponseResult getStudentScoreList(Integer studentId, String qkey, Integer termid) {
-        // 1. 自动转换身份：解决前端传 41 (AccountID) 而数据库需要 12 (sId) 的问题
+    public ResponseResult getStudentScoreList(Integer studentId, String qkey, Integer termid) {
         com.demo.model.Studentinfo student = studentinfoMapper.selectOne(
                 new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.demo.model.Studentinfo>()
                         .eq("sAccountId", studentId)
@@ -120,14 +129,13 @@ public class ScoreinfoServiceImpl
         );
 
         if (student == null) {
-            return com.demo.common.ResponseResult.success("未找到该学生信息", new java.util.ArrayList<>());
+            return ResponseResult.success("未找到该学生信息", new java.util.ArrayList<>());
         }
 
         Integer realSId = student.getSid();
 
-        // 2. 构造查询条件
         com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.demo.model.Vwscores> wrapper = new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<>();
-        wrapper.eq("sid", realSId); // 注意：视图里的字段名是 sid
+        wrapper.eq("sid", realSId);
         if (qkey != null && !qkey.isEmpty()) {
             wrapper.like("crName", qkey);
         }
@@ -137,7 +145,6 @@ public class ScoreinfoServiceImpl
 
         List<Vwscores> list = vwscoresMapper.selectList(wrapper);
 
-        // 3. 封装返回给前端的字段（必须带上 scCourseId，解决400错误）
         java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
         for (com.demo.model.Vwscores vw : list) {
             java.util.Map<String, Object> map = new java.util.HashMap<>();
@@ -145,11 +152,121 @@ public class ScoreinfoServiceImpl
             map.put("crname", vw.getCrname());
             map.put("scscore", vw.getScscore());
             map.put("tname", vw.getTname());
-            // ⚠️ 关键字段：对应前端 row.scCourseId
             map.put("scCourseId", vw.getSccourseid());
             result.add(map);
         }
 
-        return com.demo.common.ResponseResult.success("获取成功", result);
+        return ResponseResult.success("获取成功", result);
+    }
+
+
+    // =========================================================================================
+    // 💡 以下为新增的毕设最强亮点：【一维成绩智能降维与多维逆向推演算法】
+    // =========================================================================================
+
+    /**
+     * 核心算法：根据老师录入的总分，带约束地随机逆向推演出：平时分、测试分、期末分
+     */
+    private void reverseCalculateSubScores(Scoreinfo score, double weightReg, double weightTest, double weightExam) {
+        if (score.getScscore() == null) return;
+
+        double totalScore = score.getScscore().doubleValue();
+        Random random = new Random();
+
+        // 1. 模拟平时成绩：通常平时成绩比总分高，并且要在 0-100 范围内（浮动 -2 到 +8 分）
+        double regular = totalScore + (random.nextDouble() * 10 - 2);
+        regular = Math.min(100.0, Math.max(0.0, regular));
+
+        // 2. 模拟测试成绩：围绕总分上下随机波动（浮动 -5 到 +5 分）
+        double test = totalScore + (random.nextDouble() * 10 - 5);
+        test = Math.min(100.0, Math.max(0.0, test));
+
+        // 3. 终极闭环：通过代数方程反解出期末成绩，确保加权之和绝对等于老师给的总分！
+        // 公式推导: 期末 = (总分 - 平时*平时权重 - 测试*测试权重) / 期末权重
+        double exam = (totalScore - (regular * weightReg) - (test * weightTest)) / weightExam;
+
+        // 极限兜底：如果反解出的期末成绩超出了真实物理边界（>100 或 <0），说明总分太极端，直接退化为全相等
+        if (exam > 100.0 || exam < 0.0) {
+            regular = totalScore;
+            test = totalScore;
+            exam = totalScore;
+        }
+
+        // 4. 精确处理：保留一位小数并塞入数据库实体中
+        score.setScRegular(BigDecimal.valueOf(regular).setScale(1, RoundingMode.HALF_UP));
+        score.setScTest(BigDecimal.valueOf(test).setScale(1, RoundingMode.HALF_UP));
+        score.setScExam(BigDecimal.valueOf(exam).setScale(1, RoundingMode.HALF_UP));
+    }
+
+
+    /**
+     * 【暴露给 Controller 的成绩保存入口】
+     * 老师在前端列表批量敲完总分，或者Excel导入后，都是调用的这里。
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ResponseResult saveTeacherScores(List<Scoreinfo> scoreList) {
+        if (scoreList == null || scoreList.isEmpty()) {
+            return ResponseResult.Fail("提交的数据为空");
+        }
+
+        int successCount = 0;
+        for (Scoreinfo score : scoreList) {
+            if (score.getScscore() != null) {
+
+                // --- 【修改点：动态获取真实权重】 ---
+                double wReg = 0.3, wTest = 0.2, wExam = 0.5; // 设置默认兜底值
+
+                // 根据当前成绩记录的课程和班级，去 teaching 表找该老师设置的权重
+                com.demo.model.Teaching teaching = teachingMapper.selectOne(
+                        new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.demo.model.Teaching>()
+                                .eq("tcCourseId", score.getSccourseid())
+                                .eq("tcClassId", score.getScclassid())
+                                .last("LIMIT 1")
+                );
+
+                if (teaching != null && teaching.getWexam() != null) {
+                    // 如果数据库里有老师设置的权重，就用老师设置的
+                    wReg = teaching.getWregular();
+                    wTest = teaching.getWtest();
+                    wExam = teaching.getWexam();
+                }
+                // ------------------------------------
+
+                // 1. 调用你已有的逆向算法（会自动填补平时、测试、期末字段）
+                reverseCalculateSubScores(score, wReg, wTest, wExam);
+
+                // 2. 保持你原有的更新/保存逻辑
+                if (score.getScid() != null && score.getScid() > 0) {
+                    this.updateById(score);
+                } else {
+                    // 查重：防止重复插入
+                    Scoreinfo existScore = this.getOne(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Scoreinfo>()
+                            .eq("scStudentId", score.getScstudentid())
+                            .eq("scCourseId", score.getSccourseid())
+                            .eq("scTermId", score.getSctermid()));
+                    if (existScore != null) {
+                        score.setScid(existScore.getScid());
+                        this.updateById(score);
+                    } else {
+                        this.save(score);
+                    }
+                }
+
+                // 3. 保持你原有的AI诊断联动
+                try {
+                    diagnosisService.generateSimulatedDetails(
+                            score.getScstudentid(),
+                            score.getSccourseid(),
+                            score.getScscore().doubleValue()
+                    );
+                } catch (Exception e) {
+                    // 打印日志但不中断主逻辑
+                    System.err.println("细粒度拆解提示：" + e.getMessage());
+                }
+                successCount++;
+            }
+        }
+        return ResponseResult.success("成功录入并实时拆解 " + successCount + " 名学生成绩！", null);
     }
 }

@@ -2,7 +2,7 @@
   <div class="home-page">
     <div class="welcome-banner">
       <div class="banner-left">
-        <h2>欢迎使用学生成绩管理系统</h2>
+        <h2>欢迎使用学生成绩分析和弱项诊断系统</h2>
         <p>本系统用于学生、教师和管理员的成绩信息管理，支持基础信息维护、成绩查询、统计分析与个人中心管理。</p>
       </div>
       <div class="banner-right">

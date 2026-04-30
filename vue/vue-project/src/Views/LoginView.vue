@@ -5,7 +5,7 @@
         <div class="logo-icon"></div>
       </div>
 
-      <h2 class="title">学生成绩管理系统</h2>
+      <h2 class="title">学生成绩分析和弱项诊断系统</h2>
 
       <el-form
         :model="loginForm"

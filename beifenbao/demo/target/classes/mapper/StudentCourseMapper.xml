@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.StudentCourseMapper">
+
+    <select id="getStudentCourseList" resultType="com.demo.vo.StudentCourseVo">
+        select
+        tk.tcId as tkid,
+        cr.crId as crid,
+        cr.crCode as crcode,
+        cr.crName as crname,
+        cr.crCredit as crcredit,
+        cr.crPeriod as crperiod,
+        cr.crType as crtype,
+        cr.crExamType as crexamtype,
+        t.tId as tid,
+        t.tName as tname,
+        yt.yId as ytid,
+        yt.yAll as ytname,
+        c.cId as cid,
+        c.cName as cname
+        from teaching tk
+        inner join studentinfo s on s.sClassId = tk.tcClassId
+        left join courseinfo cr on tk.tcCourseId = cr.crId
+        left join teacherinfo t on tk.tcTeacherId = t.tId
+        left join yearterm yt on tk.tcTermId = yt.yId
+        left join classinfo c on tk.tcClassId = c.cId
+        where s.sAccountId = #{uid}
+        <if test="query != null and query.qkey != null and query.qkey != ''">
+            and (
+            cr.crName like concat('%', #{query.qkey}, '%')
+            or cr.crCode like concat('%', #{query.qkey}, '%')
+            )
+        </if>
+        <if test="query != null and query.ytid != null and query.ytid > 0">
+            and tk.tcTermId = #{query.ytid}
+        </if>
+        order by yt.yId desc, tk.tcId desc
+    </select>
+
+</mapper>

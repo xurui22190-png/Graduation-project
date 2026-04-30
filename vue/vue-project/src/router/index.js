@@ -213,7 +213,7 @@ const router = createRouter({
  */
 router.beforeEach((to, from, next) => {
   // 设置页面标题
-  document.title = to.meta.title || "学生成绩管理系统";
+  document.title = to.meta.title || "学生成绩分析和弱项诊断系统";
 
   const userStore = useUserStore();
 

@@ -46,7 +46,23 @@ public class Scoreinfo implements Serializable {
     @TableField("scCourseId")
     private Integer sccourseid;
 
-    @ApiModelProperty(value = "分数")
+    // ================= 新增的三项细分成绩字段 =================
+
+    @ApiModelProperty(value = "平时成绩")
+    @TableField("sc_regular")
+    private BigDecimal scRegular;
+
+    @ApiModelProperty(value = "测试成绩")
+    @TableField("sc_test")
+    private BigDecimal scTest;
+
+    @ApiModelProperty(value = "期末成绩")
+    @TableField("sc_exam")
+    private BigDecimal scExam;
+
+    // =========================================================
+
+    @ApiModelProperty(value = "最终加权总分")
     @TableField("scScore")
     private BigDecimal scscore;
 
@@ -61,6 +77,5 @@ public class Scoreinfo implements Serializable {
     @ApiModelProperty(value = "登记老师ID")
     @TableField("scTeacherId")
     private Integer scteacherid;
-
 
 }

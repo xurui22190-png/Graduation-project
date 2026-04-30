@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.VwteachingMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Vwteaching">
+        <result column="tcId" property="tcid" />
+        <result column="tcTermId" property="tctermid" />
+        <result column="tcClassId" property="tcclassid" />
+        <result column="tcCourseId" property="tccourseid" />
+        <result column="tcTeacherId" property="tcteacherid" />
+        <result column="yYear" property="yyear" />
+        <result column="yTerm" property="yterm" />
+        <result column="yAll" property="yall" />
+        <result column="cMajorId" property="cmajorid" />
+        <result column="cGrade" property="cgrade" />
+        <result column="className" property="classname" />
+        <result column="classCode" property="classcode" />
+        <result column="crCode" property="crcode" />
+        <result column="crName" property="crname" />
+        <result column="tNo" property="tno" />
+        <result column="tName" property="tname" />
+        <result column="tSex" property="tsex" />
+        <result column="tTel" property="ttel" />
+        <result column="tEduLevel" property="tedulevel" />
+        <result column="tSchool" property="tschool" />
+        <result column="tAddress" property="taddress" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        tcId, tcTermId, tcClassId, tcCourseId, tcTeacherId, yYear, yTerm, yAll, cMajorId, cGrade, className, classCode, crCode, crName, tNo, tName, tSex, tTel, tEduLevel, tSchool, tAddress
+    </sql>
+
+</mapper>

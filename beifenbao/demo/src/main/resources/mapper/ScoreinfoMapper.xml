@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.ScoreinfoMapper">
+
+    <select id="getTeacherScoreList" resultType="com.demo.vo.TeacherScoreVo">
+        select
+        sc.scId as scid,
+        sc.scStudentId as scstudentid,
+        sc.scTermId as sctermid,
+        sc.scClassId as scclassid,
+        sc.scCourseId as sccourseid,
+        sc.scTeacherId as scteacherid,
+        sc.scScore as scscore,
+        sc.scStatus as scstatus,
+        sc.scCreateDate as sccreatedate,
+        s.sNo as sno,
+        s.sName as sname,
+        c.cName as cname,
+        cr.crName as crname,
+        yt.yAll as yall,
+        t.tName as tname
+        from scoreinfo sc
+        left join studentinfo s on sc.scStudentId = s.sId
+        left join classinfo c on sc.scClassId = c.cId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        left join yearterm yt on sc.scTermId = yt.yId
+        left join teacherinfo t on sc.scTeacherId = t.tId
+        where sc.scTeacherId = #{teacherid}
+        <if test="obj != null">
+            <if test="obj.sctermid != null and obj.sctermid != 0">
+                and sc.scTermId = #{obj.sctermid}
+            </if>
+            <if test="obj.scclassid != null and obj.scclassid != 0">
+                and sc.scClassId = #{obj.scclassid}
+            </if>
+            <if test="obj.sccourseid != null and obj.sccourseid != 0">
+                and sc.scCourseId = #{obj.sccourseid}
+            </if>
+            <if test="obj.scstatus != null">
+                and sc.scStatus = #{obj.scstatus}
+            </if>
+            <if test="obj.qkey != null and obj.qkey != ''">
+                and (
+                s.sNo like concat('%', #{obj.qkey}, '%')
+                or s.sName like concat('%', #{obj.qkey}, '%')
+                )
+            </if>
+        </if>
+        order by sc.scId desc
+    </select>
+
+    <select id="getTeacherTaskList" resultType="com.demo.vo.TeacherTaskVo">
+        select
+            tc.tcId as tcid,
+            tc.tcTermId as tctermid,
+            tc.tcClassId as tcclassid,
+            tc.tcCourseId as tccourseid,
+            tc.tcTeacherId as tcteacherid,
+            yt.yAll as yall,
+            c.cName as cname,
+            cr.crName as crname,
+            t.tName as tname
+        from teaching tc
+                 left join yearterm yt on tc.tcTermId = yt.yId
+                 left join classinfo c on tc.tcClassId = c.cId
+                 left join courseinfo cr on tc.tcCourseId = cr.crId
+                 left join teacherinfo t on tc.tcTeacherId = t.tId
+        where tc.tcTeacherId = #{teacherid}
+        order by tc.tcId desc
+    </select>
+
+    <select id="getTeacherScoreStudentList" resultType="java.util.HashMap">
+        select
+            s.sId as sid,
+            s.sNo as sno,
+            s.sName as sname,
+            s.sClassId as sclassid,
+            c.cName as cname,
+            sc.scId as scid,
+            sc.scScore as scscore,
+            sc.scStatus as scstatus
+        from studentinfo s
+                 left join classinfo c on s.sClassId = c.cId
+                 left join scoreinfo sc
+                           on sc.scStudentId = s.sId
+                               and sc.scTeacherId = #{teacherid}
+                               and sc.scTermId = #{sctermid}
+                               and sc.scClassId = #{scclassid}
+                               and sc.scCourseId = #{sccourseid}
+        where s.sClassId = #{scclassid}
+        order by s.sId asc
+    </select>
+
+    <select id="checkTeachingAuth" resultType="java.lang.Integer">
+        select count(1)
+        from teaching
+        where tcTeacherId = #{teacherid}
+          and tcTermId = #{sctermid}
+          and tcClassId = #{scclassid}
+          and tcCourseId = #{sccourseid}
+    </select>
+
+</mapper>

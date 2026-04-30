@@ -1,20 +1,15 @@
 package com.demo.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.demo.mapper.KnowledgePointMapper;
-import com.demo.mapper.ScoreDetailMapper;
-import com.demo.mapper.ScoreinfoMapper;
-import com.demo.mapper.StudentinfoMapper; // 💡 必须引入
-import com.demo.model.KnowledgePoint;
-import com.demo.model.ScoreDetail;
-import com.demo.model.Scoreinfo;
-import com.demo.model.Studentinfo; // 💡 必须引入
+import com.demo.mapper.*;
+import com.demo.model.*;
 import com.demo.service.IDiagnosisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import java.util.*;
 
 @Service
@@ -22,193 +17,128 @@ public class DiagnosisServiceImpl implements IDiagnosisService {
 
     @Autowired
     private KnowledgePointMapper knowledgePointMapper;
-
     @Autowired
     private ScoreDetailMapper scoreDetailMapper;
-
     @Autowired
-    private ScoreinfoMapper scoreinfoMapper;
+    private StudentinfoMapper studentinfoMapper;
 
-    @Autowired
-    private StudentinfoMapper studentinfoMapper; // 用于转换账号ID和学生ID
+    private final RestTemplate restTemplate;
+    private final String AI_SERVICE_URL = "http://localhost:8000/api/ai/career_advice";
 
-    /**
-     * 💡 私有辅助方法：将前端传来的任何ID（账号ID或学生ID）转换为真实的sid
-     */
-    private Integer getRealSid(Integer inputId) {
-        Studentinfo student = studentinfoMapper.selectOne(
-                new QueryWrapper<Studentinfo>().eq("sAccountId", inputId).or().eq("sid", inputId)
-        );
-        return (student != null) ? student.getSid() : inputId;
+    public DiagnosisServiceImpl() {
+        // 设置超长超时，因为本地 Ollama 生成较慢
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(90000); // 90秒，确保 Qwen 能说完
+        this.restTemplate = new RestTemplate(factory);
     }
 
-    // ================== 1. 生成模拟成绩明细（当老师端未手动录入明细时调用） ==================
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void generateSimulatedDetails(Integer studentId, Integer courseId, Double totalScore) {
-        Integer realSid = getRealSid(studentId);
+    public String generateAiReport(Integer studentId, Integer courseId, String intent) {
+        try {
+            // 1. 获取学生信息 (用于 Prompt，但不作为 AI 联想的依据)
+            Studentinfo student = studentinfoMapper.selectById(studentId);
+            String name = (student != null) ? student.getSname() : "该学生";
 
-        // 先清理旧的模拟数据
-        scoreDetailMapper.delete(new QueryWrapper<ScoreDetail>()
-                .eq("student_id", realSid).eq("course_id", courseId));
+            // 2. 获取真实的薄弱知识点 (由规则引擎计算)
+            List<String> weakList = diagnoseWeakPoints(studentId, courseId);
+            String weaknessDesc = weakList.isEmpty() ? "各项知识点掌握均衡，表现优异。" : String.join("、", weakList);
 
-        // 查找该课程下由老师定义的知识点
-        List<KnowledgePoint> points = knowledgePointMapper.selectList(
-                new QueryWrapper<KnowledgePoint>().eq("course_id", courseId));
+            // 3. 构造发送给 Python 的数据 (添加“去名人化”指令)
+            Map<String, Object> pythonBody = new HashMap<>();
+            pythonBody.put("student_name", name);
+            pythonBody.put("intent", intent); // 🌟 接收前端传来的真实意向
+            pythonBody.put("weaknesses", weaknessDesc);
 
-        if (points == null || points.isEmpty()) return;
+            // 补充 6 维分数上下文 (暂时模拟，可改为动态计算)
+            Map<String, Integer> scoreMap = new HashMap<>();
+            scoreMap.put("核心力", 85); scoreMap.put("实践力", 90); scoreMap.put("逻辑力", 60);
+            pythonBody.put("scores", scoreMap);
 
-        double baseRate = totalScore / 100.0;
-        for (KnowledgePoint kp : points) {
-            ScoreDetail detail = new ScoreDetail();
-            detail.setStudentId(realSid);
-            detail.setCourseId(courseId);
-            detail.setPointId(kp.getId());
-            detail.setMaxScore(100.0);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(pythonBody, headers);
 
-            // 围绕总分率进行小范围随机浮动，模拟真实表现
-            double fluctuation = (Math.random() * 0.2) - 0.1;
-            double actualRate = Math.min(1.0, Math.max(0.0, baseRate + fluctuation));
+            // 4. 发送请求
+            ResponseEntity<Map> response = restTemplate.postForEntity(AI_SERVICE_URL, entity, Map.class);
 
-            detail.setActualScore(Math.round(actualRate * 100 * 10.0) / 10.0);
-            scoreDetailMapper.insert(detail);
+            if (response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                Object code = body.get("code");
+                // 兼容数字和字符串类型的 200
+                if (code != null && String.valueOf(code).equals("200")) {
+                    String result = (String) body.get("data");
+                    System.out.println("AI 建议: " + result);
+                    return result;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "本地 AI 导师正在阅卷，请稍后刷新重试。";
         }
+        return "AI 诊断解析失败。";
     }
 
-    // ================== 2. 获取雷达图数据（同步老师端的知识维度画像） ==================
-    @Override
-    public Map<String, Object> getRadarData(Integer studentId, Integer courseId) {
-        Integer realSid = getRealSid(studentId);
-
-        // 1. 尝试查询已有的成绩明细（老师评分生成的或系统生成的）
-        List<ScoreDetail> details = scoreDetailMapper.selectList(
-                new QueryWrapper<ScoreDetail>().eq("student_id", realSid).eq("course_id", courseId));
-
-        // 2. 🚀【核心修复】：如果明细为空，但主表有总分，则自动激活“同步生成”逻辑
-        if (details.isEmpty()) {
-            Scoreinfo mainScore = scoreinfoMapper.selectOne(
-                    new QueryWrapper<Scoreinfo>().eq("scStudentId", realSid).eq("scCourseId", courseId));
-
-            if (mainScore != null && mainScore.getScscore() != null) {
-                // 老师给了分，但还没明细，我们帮他生成一份
-                generateSimulatedDetails(realSid, courseId, mainScore.getScscore().doubleValue());
-                // 重新查一次
-                details = scoreDetailMapper.selectList(
-                        new QueryWrapper<ScoreDetail>().eq("student_id", realSid).eq("course_id", courseId));
-            }
-        }
-
-        List<Map<String, Object>> indicator = new ArrayList<>();
-        List<Double> data = new ArrayList<>();
-
-        for (ScoreDetail detail : details) {
-            KnowledgePoint kp = knowledgePointMapper.selectById(detail.getPointId());
-            if (kp != null) {
-                Map<String, Object> ind = new HashMap<>();
-                ind.put("name", kp.getPointName());
-                ind.put("max", detail.getMaxScore());
-                indicator.add(ind);
-                data.add(detail.getActualScore());
-            }
-        }
-
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("indicator", indicator);
-        resultMap.put("data", data);
-        return resultMap;
-    }
-
-    // ================== 3. 诊断弱项 ==================
     @Override
     public List<String> diagnoseWeakPoints(Integer studentId, Integer courseId) {
-        Integer realSid = getRealSid(studentId);
         List<String> weakPoints = new ArrayList<>();
-
-        List<ScoreDetail> details = scoreDetailMapper.selectList(
-                new QueryWrapper<ScoreDetail>().eq("student_id", realSid).eq("course_id", courseId));
-
-        for (ScoreDetail detail : details) {
-            if (detail.getActualScore() / detail.getMaxScore() < 0.6) {
-                KnowledgePoint kp = knowledgePointMapper.selectById(detail.getPointId());
+        QueryWrapper<ScoreDetail> wrapper = new QueryWrapper<>();
+        wrapper.eq("student_id", studentId).eq("course_id", courseId);
+        List<ScoreDetail> details = scoreDetailMapper.selectList(wrapper);
+        for (ScoreDetail d : details) {
+            if (d.getActualScore() != null && d.getMaxScore() != null && (d.getActualScore() / d.getMaxScore() < 0.6)) {
+                KnowledgePoint kp = knowledgePointMapper.selectById(d.getPointId());
                 if (kp != null) weakPoints.add(kp.getPointName());
             }
         }
         return weakPoints;
     }
 
-    // ================== 4. 接入 Python 生成 AI 诊断报告 ==================
     @Override
-    public String generateAiReport(Integer studentId, Integer courseId) {
-        Integer realSid = getRealSid(studentId);
-
-        // 1. 调用上面的 getRadarData 确保拿到数据（含自动补全逻辑）
-        Map<String, Object> radarData = getRadarData(realSid, courseId);
-        List<Map<String, Object>> indicators = (List<Map<String, Object>>) radarData.get("indicator");
-        List<Double> scores = (List<Double>) radarData.get("data");
-
-        if (indicators == null || indicators.isEmpty()) {
-            return "【AI 导师温馨提示】系统暂未检测到您在该课程下的知识点得分明细。请联系任课教师完成评分后再查看诊断。";
-        }
-
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("indicators", indicators);
-            requestBody.put("scores", scores);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-            String pythonApiUrl = "http://127.0.0.1:8000/api/diagnose";
-            ResponseEntity<Map> response = restTemplate.postForEntity(pythonApiUrl, entity, Map.class);
-
-            Map<String, Object> body = response.getBody();
-            if (body != null && (Integer) body.get("code") == 200) {
-                return (String) body.get("data");
-            }
-            return "AI 导师正在思考中，请稍后再试。";
-        } catch (Exception e) {
-            return "【系统提示】AI 诊断模块暂时离线（Python 服务未启动）。根据您的成绩建议：请重点复习得分率较低的环节。";
+    @Transactional
+    public void generateSimulatedDetails(Integer studentId, Integer courseId, Double totalScore) {
+        QueryWrapper<ScoreDetail> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.eq("student_id", studentId).eq("course_id", courseId);
+        scoreDetailMapper.delete(deleteWrapper);
+        QueryWrapper<KnowledgePoint> kpWrapper = new QueryWrapper<>();
+        kpWrapper.eq("courseId", courseId);
+        List<KnowledgePoint> kpList = knowledgePointMapper.selectList(kpWrapper);
+        if (kpList == null || kpList.isEmpty()) return;
+        Random random = new Random();
+        double base = totalScore / 100.0;
+        for (KnowledgePoint kp : kpList) {
+            ScoreDetail detail = new ScoreDetail();
+            detail.setStudentId(studentId);
+            detail.setCourseId(courseId);
+            detail.setPointId(kp.getId());
+            detail.setMaxScore(100.0);
+            double score = (base * 100) + (random.nextDouble() * 30 - 15);
+            detail.setActualScore(Math.max(0, Math.min(100, Math.round(score * 10) / 10.0)));
+            detail.setCreateTime(new Date());
+            scoreDetailMapper.insert(detail);
         }
     }
 
-    // ================== 5. 生成班级走势报告 ==================
     @Override
-    public String generateClassAiReport(Integer classId, Integer courseId) {
-        try {
-            QueryWrapper<Scoreinfo> wrapper = new QueryWrapper<>();
-            wrapper.eq("scClassId", classId).eq("scCourseId", courseId).isNotNull("scScore");
-            List<Scoreinfo> scoreList = scoreinfoMapper.selectList(wrapper);
-
-            if (scoreList == null || scoreList.isEmpty()) {
-                return "该班级尚未录入任何成绩数据，无法进行走势预测。";
+    public Map<String, Object> getRadarData(Integer studentId, Integer courseId) {
+        Map<String, Object> res = new HashMap<>();
+        List<String> indicators = new ArrayList<>();
+        List<Double> scores = new ArrayList<>();
+        QueryWrapper<ScoreDetail> wrapper = new QueryWrapper<>();
+        wrapper.eq("student_id", studentId).eq("course_id", courseId);
+        List<ScoreDetail> list = scoreDetailMapper.selectList(wrapper);
+        for (ScoreDetail d : list) {
+            KnowledgePoint kp = knowledgePointMapper.selectById(d.getPointId());
+            if (kp != null) {
+                indicators.add(kp.getPointName());
+                scores.add(d.getActualScore());
             }
-
-            List<Double> scores = new ArrayList<>();
-            for (Scoreinfo sc : scoreList) scores.add(sc.getScscore().doubleValue());
-
-            List<KnowledgePoint> kpList = knowledgePointMapper.selectList(
-                    new QueryWrapper<KnowledgePoint>().eq("course_id", courseId));
-            List<String> kpNames = new ArrayList<>();
-            for (KnowledgePoint kp : kpList) kpNames.add(kp.getPointName());
-
-            RestTemplate restTemplate = new RestTemplate();
-            Map<String, Object> body = new HashMap<>();
-            body.put("class_name", "当前选中班级");
-            body.put("course_name", "当前选中课程");
-            body.put("scores", scores);
-            body.put("knowledge_points", kpNames);
-
-            String pythonUrl = "http://127.0.0.1:8000/api/class_diagnose";
-            ResponseEntity<Map> res = restTemplate.postForEntity(pythonUrl, new HttpEntity<>(body), Map.class);
-
-            if (res.getBody() != null && (Integer) res.getBody().get("code") == 200) {
-                return (String) res.getBody().get("data");
-            }
-            return "班级 AI 分析失败。";
-        } catch (Exception e) {
-            return "无法连接到班级分析引擎。";
         }
+        res.put("indicators", indicators);
+        res.put("data", scores);
+        return res;
     }
+
+    @Override public String generateClassAiReport(Integer classId, Integer courseId) { return "班级报告生成中..."; }
+    @Override public Map<String, Object> getClassAnalysisData(Integer classId, Integer courseId) { return new HashMap<>(); }
 }

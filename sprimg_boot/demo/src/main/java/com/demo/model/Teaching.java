@@ -7,17 +7,7 @@ import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-/**
- * <p>
- * 授课安排表
- * </p>
- *
- * @author xyh
- * @since 2026-03-19
- */
-@Data
+import lombok.EqualsAndHashCode;@Data
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="Teaching对象", description="授课安排表")
 public class Teaching implements Serializable {
@@ -26,7 +16,7 @@ public class Teaching implements Serializable {
 
     @ApiModelProperty(value = "授课ID")
     @TableId(value = "tcId", type = IdType.AUTO)
-    private Integer tcid;
+    private Integer tcid; // 保持你原来的字段名
 
     @ApiModelProperty(value = "学期")
     @TableField("tcTermId")
@@ -44,5 +34,16 @@ public class Teaching implements Serializable {
     @TableField("tcTeacherId")
     private Integer tcteacherid;
 
+    // 👇👇👇 新增下面这三个权重字段，必须跟数据库字段对应
+    @ApiModelProperty(value = "平时成绩权重")
+    @TableField("w_regular")
+    private Double wregular;
 
+    @ApiModelProperty(value = "测试成绩权重")
+    @TableField("w_test")
+    private Double wtest;
+
+    @ApiModelProperty(value = "考试成绩权重")
+    @TableField("w_exam")
+    private Double wexam;
 }

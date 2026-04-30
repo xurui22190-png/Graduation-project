@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.transform.Result;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +38,15 @@ public class DiagnosisController {
      * 2. 供 Vue 调用的接口：获取个人 AI 深度诊断报告
      */
     @GetMapping("/getAiReport")
-    public ResponseResult getAiReport(@RequestParam Integer studentId, @RequestParam Integer courseId) {
-        String aiReport = diagnosisService.generateAiReport(studentId, courseId);
-        return ResponseResult.success("个人AI报告生成成功", aiReport);
+    public ResponseResult getAiReport(
+            @RequestParam Integer studentId,
+            @RequestParam Integer courseId,
+            @RequestParam(defaultValue = "job") String intent
+    ) {
+        String report = diagnosisService.generateAiReport(studentId, courseId, intent);
+
+        // 🌟 修复点：第一个参数传"success"，第二个参数传真正的report
+        return ResponseResult.success("success", report);
     }
 
     /**
@@ -50,4 +57,16 @@ public class DiagnosisController {
         String aiReport = diagnosisService.generateClassAiReport(classId, courseId);
         return ResponseResult.success("班级AI报告生成成功", aiReport);
     }
+    @GetMapping("/classAnalysis")
+    public ResponseResult getClassAnalysis(@RequestParam Integer classId, @RequestParam Integer courseId) {
+        try {
+            Map<String, Object> data = diagnosisService.getClassAnalysisData(classId, courseId);
+            // 💡 修复点：调用你 ResponseResult.java 中定义的两个参数的方法
+            return ResponseResult.success("查询成功", data);
+        } catch (Exception e) {
+            return ResponseResult.Fail("分析失败：" + e.getMessage());
+        }
+    }
+
+
 }

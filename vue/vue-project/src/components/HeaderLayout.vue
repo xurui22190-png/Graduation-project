@@ -3,7 +3,7 @@
     <div class="header-left">
       <button class="system-btn" @click="goHome">
         <i class="fa fa-bandcamp" aria-hidden="true"></i>
-        <span>学生成绩管理系统</span>
+        <span>学生成绩分析和弱项诊断</span>
       </button>
     </div>
 

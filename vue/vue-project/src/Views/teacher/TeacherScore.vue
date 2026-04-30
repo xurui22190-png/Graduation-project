@@ -217,6 +217,18 @@
             加载学生
           </el-button>
         </el-form-item>
+        <el-form-item>
+  <el-upload
+    action=""
+    :show-file-list="false"
+    :http-request="handleExcelImport"
+    accept=".xlsx, .xls"
+  >
+    <el-button type="success" :loading="uploadLoading">
+      <el-icon style="margin-right: 4px"><Upload /></el-icon> Excel 批量导入
+    </el-button>
+  </el-upload>
+</el-form-item>
       </el-form>
 
       <el-table
@@ -311,7 +323,8 @@ import { ref, reactive, computed, onMounted, nextTick } from "vue"
 import axios from "@/utils/Axios"
 import { ElMessage } from "element-plus"
 import * as echarts from 'echarts' // 仅增加 echarts 绘图库
-
+import { Upload } from '@element-plus/icons-vue'
+const uploadLoading = ref(false)
 const loading = ref(false)
 const studentLoading = ref(false)
 const dialogVisible = ref(false)
@@ -583,58 +596,76 @@ const handleEntryClassChange = () => {
 }
 
 const handleSaveScore = async () => {
+  // 1. 基础校验：确保已选择上下文并加载了数据
   if (!entryForm.sctermid || !entryForm.scclassid || !entryForm.sccourseid) {
-    ElMessage.warning("请先选择学期、班级和课程")
-    return
+    ElMessage.warning("请先选择学期、班级和课程");
+    return;
   }
   if (!studentTableData.value || studentTableData.value.length === 0) {
-    ElMessage.warning("请先加载学生数据")
-    return
+    ElMessage.warning("请先加载学生数据");
+    return;
   }
-  const scoreList = []
+
+  // 2. 组装后端实体类需要的标准数据列表
+  const scoreList = [];
   for (const item of studentTableData.value) {
     if (!item || !item.sid) {
-      continue
+      continue;
     }
-    const scoreValue = formatScoreValue(item.scscore)
-    const statusValue = formatStatusValue(item.scstatus)
+
+    // 格式化当前行的分数和状态
+    const scoreValue = formatScoreValue(item.scscore);
+    const statusValue = formatStatusValue(item.scstatus);
+
+    // 校验总分范围
     if (scoreValue !== null && (scoreValue < 0 || scoreValue > 100)) {
-      ElMessage.warning(`${item.sname || item.sno} 的成绩必须在 0 到 100 之间`)
-      return
+      ElMessage.warning(`${item.sname || item.sno} 的成绩必须在 0 到 100 之间`);
+      return;
     }
+
+    // 💡 关键修改：这里的字段必须严格对应你后端 Scoreinfo 实体类！
+    // 因为你后端的保存接口直接接收 List<Scoreinfo>
     scoreList.push({
-      sid: item.sid,
-      scid: item.scid ?? null,
-      scscore: scoreValue,
-      scstatus: statusValue
-    })
+      scid: item.scid ?? null,          // 成绩主键（如果有的话，用于更新）
+      scstudentid: item.sid,            // 学生ID
+      sctermid: entryForm.sctermid,     // 学期ID
+      scclassid: entryForm.scclassid,   // 班级ID
+      sccourseid: entryForm.sccourseid, // 课程ID
+      scscore: scoreValue,              // 总分
+      scstatus: statusValue             // 状态
+    });
   }
+
+  // 3. 发送网络请求
   try {
-    studentLoading.value = true
-    const res = await axios.post("/teacherstudent/savescores", {
-      tctermid: entryForm.sctermid,
-      tcclassid: entryForm.scclassid,
-      tccourseid: entryForm.sccourseid,
-      scoreList
-    })
-    const resp = res?.data || {}
-    const code = resp.code ?? resp._code
-    const msg = resp.msg ?? resp._msg ?? "保存失败"
+    studentLoading.value = true;
+
+    // 💡 关键修改：直接把这个 scoreList 发给咱们新写的带魔法算法的接口
+    // 注意检查你的接口前缀，如果是 /api，记得加上
+    const res = await axios.post("/scoreinfo/saveScoreList", scoreList);
+
+    const resp = res?.data || {};
+    const code = resp.code ?? resp._code;
+    const msg = resp.msg ?? resp._msg ?? "保存失败";
+
+    // 4. 处理响应结果
     if (code === 200) {
-      ElMessage.success(msg || "保存成功")
-      await loadStudentScoreList()
-      await loadTableData()
-      dialogVisible.value = false
+      ElMessage.success(msg || "成绩保存并智能拆解成功！");
+      // 重新刷新背后的看板数据
+      await loadStudentScoreList();
+      await loadTableData();
+      // 如果是在弹窗里录入，这一步可以关掉弹窗
+      // dialogVisible.value = false;
     } else {
-      ElMessage.error(msg)
+      ElMessage.error(msg);
     }
   } catch (error) {
-    console.error("保存成绩失败：", error)
-    ElMessage.error("保存成绩失败")
+    console.error("保存成绩失败：", error);
+    ElMessage.error("网络请求异常或后端服务未启动");
   } finally {
-    studentLoading.value = false
+    studentLoading.value = false;
   }
-}
+};
 
 // =================== 【下方为完全独立新增的 AI 逻辑，不干扰原逻辑】 ===================
 
@@ -731,6 +762,47 @@ const handleClassDiagnosis = async () => {
     classAiReportText.value = "连接大模型失败，请检查后端和 Python 微服务状态。"
   } finally {
     isGeneratingClassAi.value = false
+  }
+}
+
+// Excel 自定义上传逻辑
+const handleExcelImport = async (options) => {
+  // 必须先选择好学期、班级、课程
+  if (!entryForm.sctermid || !entryForm.scclassid || !entryForm.sccourseid) {
+    ElMessage.warning("请先在左侧选择要导入的学期、班级和课程！")
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('file', options.file)
+  formData.append('sctermid', entryForm.sctermid)
+  formData.append('scclassid', entryForm.scclassid)
+  formData.append('sccourseid', entryForm.sccourseid)
+
+  try {
+    uploadLoading.value = true
+    // 💡 请求刚刚写好的后端接口
+    const res = await axios.post("/scoreinfo/importScores", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    const resp = res?.data || {}
+    const code = resp.code ?? resp._code
+    if (code === 200) {
+      ElMessage.success(resp.msg || resp._msg || "批量导入并智能拆解成功！")
+      // 刷新列表数据
+      await loadStudentScoreList()
+      await loadTableData()
+    } else {
+      ElMessage.error(resp.msg || resp._msg || "导入失败")
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error("网络异常或文件格式不正确")
+  } finally {
+    uploadLoading.value = false
   }
 }
 

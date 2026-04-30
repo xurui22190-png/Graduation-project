@@ -7,6 +7,7 @@ import com.demo.dto.ScoreinfoDto;
 import com.demo.model.Scoreinfo;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface IScoreinfoService extends IService<Scoreinfo> {
 
@@ -18,6 +19,6 @@ public interface IScoreinfoService extends IService<Scoreinfo> {
                                               Integer scclassid,
                                               Integer sccourseid,
                                               HttpServletRequest request);
-
+    ResponseResult saveTeacherScores(List<Scoreinfo> scoreList);
     ResponseResult getStudentScoreList(Integer studentId, String qkey, Integer termid);
 }

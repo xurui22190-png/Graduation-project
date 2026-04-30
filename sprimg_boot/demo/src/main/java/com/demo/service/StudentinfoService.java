@@ -1,7 +1,10 @@
 package com.demo.service;
 
+import com.demo.dto.StudentExcelDto;
 import com.demo.model.Studentinfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface StudentinfoService extends IService<Studentinfo> {
 
+
+    void importStudents(List<StudentExcelDto> list);
 }
