@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.ClassinfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Classinfo">
+        <id column="cId" property="cid" />
+        <result column="cMajorId" property="cmajorid" />
+        <result column="cGrade" property="cgrade" />
+        <result column="cName" property="cname" />
+        <result column="cCode" property="ccode" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        cId, cMajorId, cGrade, cName, cCode
+    </sql>
+
+</mapper>

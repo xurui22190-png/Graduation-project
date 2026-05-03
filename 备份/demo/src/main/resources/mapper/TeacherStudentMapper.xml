@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.TeacherStudentMapper">
+
+    <!-- 教师查看授课范围下的学生成绩列表 -->
+    <select id="getlist" resultType="com.demo.model.Vwteacherstudent">
+    SELECT
+    s.sId AS sid,
+    s.sNo AS sno,
+    s.sName AS sname,
+    s.sSex AS ssex,
+    s.sClassId AS sclassid,
+    c.cId AS cid,
+    c.cName AS cname,
+    cr.crId AS crid,
+    cr.crName AS crname,
+    yt.yId AS yid,
+    CONCAT(yt.yYear, '-', yt.yTerm) AS yall,
+    t.tId AS tid,
+    t.tName AS tname,
+    sc.scId AS scid,
+    sc.scScore AS scscore,
+    sc.scStatus AS scstatus,
+    sc.scCreateDate AS sccreatedate
+    FROM teaching tc
+    INNER JOIN studentinfo s
+    ON tc.tcClassId = s.sClassId
+    LEFT JOIN classinfo c
+    ON s.sClassId = c.cId
+    LEFT JOIN courseinfo cr
+    ON tc.tcCourseId = cr.crId
+    LEFT JOIN yearterm yt
+    ON tc.tcTermId = yt.yId
+    LEFT JOIN teacherinfo t
+    ON tc.tcTeacherId = t.tId
+    LEFT JOIN scoreinfo sc
+    ON sc.scStudentId = s.sId
+    AND sc.scTermId = tc.tcTermId
+    AND sc.scClassId = tc.tcClassId
+    AND sc.scCourseId = tc.tcCourseId
+    WHERE tc.tcTeacherId = #{teacherId}
+
+    <if test="dto != null">
+        <if test="dto.tctermid != null and dto.tctermid != 0">
+            AND tc.tcTermId = #{dto.tctermid}
+        </if>
+
+        <if test="dto.tccourseid != null and dto.tccourseid != 0">
+            AND tc.tcCourseId = #{dto.tccourseid}
+        </if>
+
+        <if test="dto.tcclassid != null and dto.tcclassid != 0">
+            AND tc.tcClassId = #{dto.tcclassid}
+        </if>
+
+        <if test="dto.qkey != null and dto.qkey != ''">
+            AND (
+            s.sNo LIKE CONCAT('%', #{dto.qkey}, '%')
+            OR s.sName LIKE CONCAT('%', #{dto.qkey}, '%')
+            )
+        </if>
+
+        <if test="dto.scstatus != null">
+            AND IFNULL(sc.scStatus, 0) = #{dto.scstatus}
+        </if>
+    </if>
+
+    ORDER BY
+    CASE WHEN IFNULL(sc.scStatus, 0) = 1 THEN 0 ELSE 1 END ASC,
+    sc.scCreateDate DESC,
+    sc.scScore DESC,
+    s.sId ASC
+</select>
+
+    <!-- 当前教师授课任务列表：给学期/班级/课程下拉框用 -->
+    <select id="getTaskList" resultType="java.util.HashMap">
+        SELECT
+            tc.tcTermId AS tctermid,
+            tc.tcClassId AS tcclassid,
+            tc.tcCourseId AS tccourseid,
+            c.cName AS cname,
+            cr.crName AS crname,
+            CONCAT(yt.yYear, '-', yt.yTerm) AS yall,
+            CASE
+                WHEN COUNT(sc.scId) > 0 THEN 1
+                ELSE 0
+                END AS hasscore
+        FROM teaching tc
+                 LEFT JOIN classinfo c
+                           ON tc.tcClassId = c.cId
+                 LEFT JOIN courseinfo cr
+                           ON tc.tcCourseId = cr.crId
+                 LEFT JOIN yearterm yt
+                           ON tc.tcTermId = yt.yId
+                 LEFT JOIN scoreinfo sc
+                           ON sc.scTermId = tc.tcTermId
+                               AND sc.scClassId = tc.tcClassId
+                               AND sc.scCourseId = tc.tcCourseId
+        WHERE tc.tcTeacherId = #{teacherId}
+        GROUP BY
+            tc.tcTermId,
+            tc.tcClassId,
+            tc.tcCourseId,
+            c.cName,
+            cr.crName,
+            yt.yYear,
+            yt.yTerm
+        ORDER BY hasscore DESC, tc.tcTermId DESC, tc.tcClassId ASC, tc.tcCourseId ASC
+    </select>
+
+    <!-- 成绩录入时加载某个授课任务下的学生 -->
+    <select id="getStudents" resultType="com.demo.vo.TeacherStudentScoreVo">
+        select
+            s.sId as sid,
+            s.sNo as sno,
+            s.sName as sname,
+            s.sClassId as sclassid,
+            c.cName as cname,
+            sc.scId as scid,
+            sc.scScore as scscore,
+            sc.scStatus as scstatus
+        from studentinfo s
+                 left join classinfo c on s.sClassId = c.cId
+                 left join scoreinfo sc
+                           on sc.scStudentId = s.sId
+                               and sc.scTeacherId = #{teacherId}
+                               and sc.scTermId = #{dto.tctermid}
+                               and sc.scClassId = #{dto.tcclassid}
+                               and sc.scCourseId = #{dto.tccourseid}
+        where s.sClassId = #{dto.tcclassid}
+        order by s.sId asc
+    </select>
+
+    <select id="getCourseStudents" resultType="com.demo.vo.TeacherCourseStudentVo">
+        select
+        s.sId as sid,
+        s.sNo as sno,
+        s.sName as sname,
+        s.sSex as ssex,
+        s.sClassId as sclassid,
+        c.cName as cname,
+        c.cMajorId as cmajorid,
+        m.mName as mname,
+        s.sTel as stel
+        from teaching tc
+        inner join studentinfo s on tc.tcClassId = s.sClassId
+        left join classinfo c on s.sClassId = c.cId
+        left join majorinfo m on c.cMajorId = m.mId
+        where tc.tcTeacherId = #{teacherId}
+
+        <if test="dto != null">
+            <if test="dto.tctermid != null and dto.tctermid != 0">
+                and tc.tcTermId = #{dto.tctermid}
+            </if>
+            <if test="dto.tcclassid != null and dto.tcclassid != 0">
+                and tc.tcClassId = #{dto.tcclassid}
+            </if>
+            <if test="dto.tccourseid != null and dto.tccourseid != 0">
+                and tc.tcCourseId = #{dto.tccourseid}
+            </if>
+            <if test="dto.qkey != null and dto.qkey != ''">
+                and (
+                s.sNo like concat('%', #{dto.qkey}, '%')
+                or s.sName like concat('%', #{dto.qkey}, '%')
+                )
+            </if>
+        </if>
+
+        order by s.sId asc
+    </select>
+</mapper>

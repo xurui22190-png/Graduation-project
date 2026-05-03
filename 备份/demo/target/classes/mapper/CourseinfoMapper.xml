@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.CourseinfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Courseinfo">
+        <id column="crId" property="crid" />
+        <result column="crCode" property="crcode" />
+        <result column="crName" property="crname" />
+        <result column="crMajorId" property="crmajorid" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        crId, crCode, crName, crMajorId
+    </sql>
+
+</mapper>

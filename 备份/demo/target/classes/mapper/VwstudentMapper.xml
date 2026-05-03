@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.mapper.VwstudentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.demo.model.Vwstudent">
+        <result column="sid" property="sid" />
+        <result column="sNo" property="sno" />
+        <result column="sName" property="sname" />
+        <result column="sSex" property="ssex" />
+        <result column="sClassId" property="sclassid" />
+        <result column="sTel" property="stel" />
+        <result column="sIdcard" property="sidcard" />
+        <result column="sAddress" property="saddress" />
+        <result column="sCreateDate" property="screatedate" />
+        <result column="sAccountId" property="saccountid" />
+        <result column="cMajorId" property="cmajorid" />
+        <result column="cGrade" property="cgrade" />
+        <result column="className" property="classname" />
+        <result column="classCode" property="classcode" />
+        <result column="mName" property="mname" />
+        <result column="mCode" property="mcode" />
+        <result column="mCollegeId" property="mcollegeid" />
+        <result column="collegeName" property="collegename" />
+        <result column="collegeCode" property="collegecode" />
+        <result column="cParentId" property="cparentid" />
+        <result column="cNamet" property="cnamet" />
+        <result column="cCodet" property="ccodet" />
+        <result column="cParentIdt" property="cparentidt" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        sid, sNo, sName, sSex, sClassId, sTel, sIdcard, sAddress, sCreateDate, sAccountId, cMajorId, cGrade, className, classCode, mName, mCode, mCollegeId, collegeName, collegeCode, cParentId, cNamet, cCodet, cParentIdt
+    </sql>
+
+</mapper>

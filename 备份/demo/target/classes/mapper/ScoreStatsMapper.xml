@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.demo.mapper.ScoreStatsMapper">
+
+    <!-- 公共查询条件 -->
+    <sql id="BaseWhere">
+        <where>
+            <if test="dto != null">
+
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+
+            </if>
+        </where>
+    </sql>
+
+    <!-- 顶部汇总 -->
+    <select id="getSummary" resultType="com.demo.vo.ScoreSummaryVo">
+        select
+        count(*) as totalcount,
+        count(distinct sc.scStudentId) as studentcount,
+        round(avg(sc.scScore), 2) as avgscore,
+        max(sc.scScore) as maxscore,
+        min(sc.scScore) as minscore,
+        round(sum(case when sc.scScore &gt;= 60 then 1 else 0 end) * 100.0 / count(*), 2) as passrate,
+        round(sum(case when sc.scScore &gt;= 90 then 1 else 0 end) * 100.0 / count(*), 2) as excellentrate
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <include refid="BaseWhere"/>
+    </select>
+
+    <!-- 分数段统计 -->
+    <select id="getRangeList" resultType="com.demo.vo.ScoreRangeVo">
+        select '90-100' as rangename, count(*) as num
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            sc.scScore &gt;= 90
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+
+        union all
+
+        select '80-89' as rangename, count(*) as num
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            sc.scScore &gt;= 80 and sc.scScore &lt; 90
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+
+        union all
+
+        select '70-79' as rangename, count(*) as num
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            sc.scScore &gt;= 70 and sc.scScore &lt; 80
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+
+        union all
+
+        select '60-69' as rangename, count(*) as num
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            sc.scScore &gt;= 60 and sc.scScore &lt; 70
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+
+        union all
+
+        select '0-59' as rangename, count(*) as num
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            sc.scScore &lt; 60
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <!-- 列表 -->
+    <select id="getList" resultType="com.demo.vo.ScoreStatsListVo">
+        select
+        cr.crId as crid,
+        cr.crName as crname,
+        cl.cId as cid,
+        cl.cName as cname,
+        count(*) as totalnum,
+        round(avg(sc.scScore), 2) as avgscore,
+        max(sc.scScore) as maxscore,
+        min(sc.scScore) as minscore,
+        round(sum(case when sc.scScore &gt;= 60 then 1 else 0 end) * 100.0 / count(*), 2) as passrate,
+        round(sum(case when sc.scScore &gt;= 90 then 1 else 0 end) * 100.0 / count(*), 2) as excellentrate
+        from scoreinfo sc
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <include refid="BaseWhere"/>
+        group by cr.crId, cr.crName, cl.cId, cl.cName
+        order by avgscore desc, cr.crId asc, cl.cId asc
+    </select>
+
+    <select id="getTrendList" resultType="com.demo.vo.ScoreTrendVo">
+        select
+        yt.yId as yid,
+        yt.yAll as termname,
+        round(avg(sc.scScore), 2) as avgscore,
+        round(sum(case when sc.scScore &gt;= 60 then 1 else 0 end) * 100.0 / count(*), 2) as passrate,
+        round(sum(case when sc.scScore &gt;= 90 then 1 else 0 end) * 100.0 / count(*), 2) as excellentrate
+        from scoreinfo sc
+        left join yearterm yt on sc.scTermId = yt.yId
+        left join classinfo cl on sc.scClassId = cl.cId
+        left join majorinfo mj on cl.cMajorId = mj.mId
+        left join courseinfo cr on sc.scCourseId = cr.crId
+        <where>
+            <if test="dto != null">
+                <if test="dto.yid != null and dto.yid != 0">
+                    and sc.scTermId = #{dto.yid}
+                </if>
+
+                <if test="dto.cid != null and dto.cid != 0">
+                    and sc.scClassId = #{dto.cid}
+                </if>
+
+                <if test="dto.crid != null and dto.crid != 0">
+                    and sc.scCourseId = #{dto.crid}
+                </if>
+
+                <if test="dto.majorid != null and dto.majorid != 0">
+                    and cl.cMajorId = #{dto.majorid}
+                </if>
+
+                <if test="dto.collegeid != null and dto.collegeid != 0">
+                    and mj.mCollegeId = #{dto.collegeid}
+                </if>
+
+                <if test="dto.qkey != null and dto.qkey != ''">
+                    and (
+                    cr.crName like concat('%', #{dto.qkey}, '%')
+                    or cl.cName like concat('%', #{dto.qkey}, '%')
+                    )
+                </if>
+            </if>
+        </where>
+        group by yt.yId, yt.yAll
+        order by yt.yId asc
+    </select>
+</mapper>
