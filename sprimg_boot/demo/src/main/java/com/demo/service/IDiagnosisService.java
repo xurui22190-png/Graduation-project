@@ -1,5 +1,9 @@
 package com.demo.service;
 
+import com.demo.dto.ScoreWeaknessReportDto;
+import com.demo.dto.StudentPlanningReportDto;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import java.util.List;
 import java.util.Map;
 
@@ -11,9 +15,29 @@ public interface IDiagnosisService {
     String generateAiReport(Integer studentId, Integer courseId, String intent);
 
     /**
+     * 流式生成单门课程 AI 诊断报告，供前端 EventSource 实时接收。
+     */
+    SseEmitter streamAiReport(Integer studentId, Integer courseId, String intent);
+
+    /**
+     * 根据学生六维画像和成绩列表，生成未来规划分析
+     */
+    String generatePlanningReport(StudentPlanningReportDto dto);
+
+    /**
+     * 只根据学生所有成绩，生成弱项诊断
+     */
+    String generateScoreWeaknessReport(ScoreWeaknessReportDto dto);
+
+    /**
      * 诊断弱项：返回得分率低于60%的知识点名称
      */
     List<String> diagnoseWeakPoints(Integer studentId, Integer courseId);
+
+    /**
+     * 根据单门课程知识点雷达数据，生成学情分析
+     */
+    String generateCourseAnalysis(Integer studentId, Integer courseId);
 
     /**
      * 获取用于前端 Echarts 雷达图的数据

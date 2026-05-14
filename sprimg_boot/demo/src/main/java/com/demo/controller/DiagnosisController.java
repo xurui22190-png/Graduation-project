@@ -1,12 +1,17 @@
-package com.demo.controller; // ⚠️注意：如果你的包名不是这个，请保留你原本的第一行
+package com.demo.controller;
 
 import com.demo.common.ResponseResult; // ⚠️注意：如果你的Result类不叫这个，请根据你的项目修改
+import com.demo.dto.ScoreWeaknessReportDto;
+import com.demo.dto.StudentPlanningReportDto;
 import com.demo.service.IDiagnosisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.xml.transform.Result;
 import java.util.List;
@@ -25,13 +30,17 @@ public class DiagnosisController {
     @GetMapping("/getRadarData")
     public ResponseResult getRadarData(@RequestParam Integer studentId, @RequestParam Integer courseId) {
         Map<String, Object> radarData = diagnosisService.getRadarData(studentId, courseId);
-
         List<?> dataList = (List<?>) radarData.get("data");
         if (dataList == null || dataList.isEmpty()) {
             return ResponseResult.Fail("暂无学情分析数据");
         }
-
         return ResponseResult.success("获取雷达图数据成功", radarData);
+    }
+
+    @GetMapping("/getCourseAnalysis")
+    public ResponseResult getCourseAnalysis(@RequestParam Integer studentId, @RequestParam Integer courseId) {
+        String report = diagnosisService.generateCourseAnalysis(studentId, courseId);
+        return ResponseResult.success("success", report);
     }
 
     /**
@@ -46,6 +55,27 @@ public class DiagnosisController {
         String report = diagnosisService.generateAiReport(studentId, courseId, intent);
 
         // 🌟 修复点：第一个参数传"success"，第二个参数传真正的report
+        return ResponseResult.success("success", report);
+    }
+
+    @GetMapping("/streamReport")
+    public SseEmitter streamAiReport(
+            @RequestParam Integer studentId,
+            @RequestParam Integer courseId,
+            @RequestParam(defaultValue = "job") String intent
+    ) {
+        return diagnosisService.streamAiReport(studentId, courseId, intent);
+    }
+
+    @PostMapping("/getPlanningReport")
+    public ResponseResult getPlanningReport(@RequestBody StudentPlanningReportDto dto) {
+        String report = diagnosisService.generatePlanningReport(dto);
+        return ResponseResult.success("success", report);
+    }
+
+    @PostMapping("/getScoreWeaknessReport")
+    public ResponseResult getScoreWeaknessReport(@RequestBody ScoreWeaknessReportDto dto) {
+        String report = diagnosisService.generateScoreWeaknessReport(dto);
         return ResponseResult.success("success", report);
     }
 

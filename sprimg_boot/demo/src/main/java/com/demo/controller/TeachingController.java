@@ -7,6 +7,7 @@ import com.demo.dto.TeachingDto;
 import com.demo.model.Teaching;
 import com.demo.model.Teacherinfo;
 import com.demo.model.Vwteaching;
+import com.demo.service.IScoreinfoService;
 import com.demo.service.TeacherinfoService;
 import com.demo.service.TeachingService;
 import com.demo.service.VwteachingService;
@@ -31,6 +32,9 @@ public class TeachingController {
 
     @Autowired
     private VwteachingService vwteachingService;
+
+    @Autowired
+    private IScoreinfoService scoreinfoService;
 
     @GetMapping("getlist")
     @ApiOperation("获取授课列表（含数据权限隔离）")
@@ -86,9 +90,29 @@ public class TeachingController {
         try {
             // 2. 使用 MyBatis-Plus 的局部更新方法
             // 注意：这里用 updateById 比较稳妥
-            boolean flag = teachingService.updateById(model);
+            Teaching oldModel = teachingService.getById(model.getTcid());
+            if (oldModel == null) {
+                return ResponseResult.Fail("鏇存柊澶辫触锛岃鎺堣璁板綍涓嶅瓨鍦?");
+            }
+
+            boolean flag = teachingService.lambdaUpdate()
+                    .eq(Teaching::getTctermid, oldModel.getTctermid())
+                    .eq(Teaching::getTcclassid, oldModel.getTcclassid())
+                    .eq(Teaching::getTccourseid, oldModel.getTccourseid())
+                    .set(Teaching::getWexam, model.getWexam())
+                    .set(Teaching::getWregular, model.getWregular())
+                    .set(Teaching::getWtest, model.getWtest())
+                    .update();
 
             if(flag) {
+                scoreinfoService.refreshCompositionScores(
+                        oldModel.getTctermid(),
+                        oldModel.getTcclassid(),
+                        oldModel.getTccourseid(),
+                        model.getWregular(),
+                        model.getWtest(),
+                        model.getWexam()
+                );
                 return ResponseResult.success("权重设置成功", null);
             } else {
                 return ResponseResult.Fail("更新失败，请检查该记录是否存在");

@@ -81,6 +81,9 @@
           <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
           <el-button type="success" @click="handleOpenEntryDialog">成绩录入</el-button>
+          <el-button type="warning" plain @click="handleOpenImportDialog">
+            <el-icon style="margin-right: 4px"><Upload /></el-icon> Excel 批量导入
+          </el-button>
 
         </el-form-item>
       </el-form>
@@ -278,7 +281,7 @@
       @opened="initEcharts"
     >
       <div v-loading="radarLoading">
-        <div id="radarChart" style="width: 100%; height: 350px;"></div>
+        <div id="radarChart" style="width: 100%; height: 430px;"></div>
         <el-card shadow="hover" style="margin-top: 15px; background-color: #f8fafd; border: 1px solid #e1eaf4;">
           <template #header>
             <div style="font-weight: bold; color: #409EFF; font-size: 15px;">本地大模型专家诊断建议</div>
@@ -321,6 +324,7 @@
 // 完全保留你原有的导入
 import { ref, reactive, computed, onMounted, nextTick } from "vue"
 import axios from "@/utils/Axios"
+import { hturl } from "@/store/config.js"
 import { ElMessage } from "element-plus"
 import * as echarts from 'echarts' // 仅增加 echarts 绘图库
 import { Upload } from '@element-plus/icons-vue'
@@ -477,9 +481,9 @@ const loadTableData = async () => {
         pageIndex: pageIndex.value,
         pageSize: pageSize.value,
         qkey: searchForm.qkey,
-        sctermid: searchForm.sctermid ?? "",
-        scclassid: searchForm.scclassid ?? "",
-        sccourseid: searchForm.sccourseid ?? "",
+        tctermid: searchForm.sctermid ?? "",
+        tcclassid: searchForm.scclassid ?? "",
+        tccourseid: searchForm.sccourseid ?? "",
         scstatus: searchForm.scstatus ?? ""
       }
     })
@@ -584,6 +588,13 @@ const handleOpenEntryDialog = () => {
   dialogVisible.value = true
 }
 
+const handleOpenImportDialog = () => {
+  handleOpenEntryDialog()
+  if (!entryForm.sctermid || !entryForm.scclassid || !entryForm.sccourseid) {
+    ElMessage.info("请先选择学期、班级和课程，再上传 Excel")
+  }
+}
+
 const handleEntryTermChange = () => {
   entryForm.scclassid = null
   entryForm.sccourseid = null
@@ -678,39 +689,201 @@ const showRadarDialog = (row) => {
 
 const initEcharts = async () => {
   radarLoading.value = true
+
   try {
     const res = await axios.get('/diagnosis/getRadarData', {
-      params: { studentId: currentStudentId.value, courseId: currentCourseId.value }
+      params: {
+        studentId: currentStudentId.value,
+        courseId: currentCourseId.value
+      }
     })
+
     const resp = res?.data || {}
     const code = resp.code ?? resp._code
-    if (code === 200 && resp.data) {
-      await nextTick()
-      const chartDom = document.getElementById('radarChart')
-      if (radarInstance) radarInstance.dispose()
-      radarInstance = echarts.init(chartDom)
-      const option = {
-        title: { text: '个人知识点能力画像', left: 'center' },
-        tooltip: { trigger: 'item' },
-        radar: {
-          indicator: resp.data.indicator,
-          shape: 'circle',
-          axisName: { color: 'rgb(38, 38, 38)' }
-        },
-        series: [{
-          type: 'radar',
-          data: [{
-            value: resp.data.data,
-            name: '得分率',
-            areaStyle: { color: 'rgba(64, 158, 255, 0.3)' },
-            itemStyle: { color: '#409EFF' }
-          }]
-        }]
-      }
-      radarInstance.setOption(option)
+
+    if (code !== 200) {
+      ElMessage.error(resp.msg || "获取雷达图失败")
+      return
     }
+
+    const raw = resp.data || {}
+
+    // ✅ 字段兼容（你后端是 indicators）
+    const indicatorsRaw = raw.indicators || raw.indicator || []
+    const valuesRaw = raw.data || []
+
+    if (!Array.isArray(indicatorsRaw) || !Array.isArray(valuesRaw)) {
+      ElMessage.error("雷达图数据格式错误")
+      return
+    }
+
+    const values = valuesRaw.map((value) => {
+      const num = Number(value)
+      return Number.isFinite(num) ? num : 0
+    })
+
+    if (indicatorsRaw.length === 0) {
+      ElMessage.warning("暂无数据")
+      return
+    }
+
+    // ✅ 自动补 max + 弱项标红
+    const indicators = indicatorsRaw.map((item, index) => {
+      const source = item && typeof item === 'object' ? item : {}
+      const value = Number(values[index] || 0)
+      const name = typeof item === 'string'
+        ? item
+        : source.name || source.pointName || source.label || `知识点${index + 1}`
+
+      return {
+        name,
+        max: Number(source.max) || 100,
+        actualScore: source.actualScore,
+        maxScore: source.maxScore,
+        color: value < 60 ? '#F56C6C' : '#303133'
+      }
+    })
+
+    indicators.forEach((indicator, index) => {
+      const rawName = indicator.name || `知识点${index + 1}`
+      indicator.rawName = rawName
+      indicator.name = String(rawName).length > 8
+        ? String(rawName).replace(/(.{6})/g, '$1\n').trim()
+        : rawName
+      indicator.color = Number(values[index] || 0) < 60 ? '#E5484D' : '#303133'
+    })
+
+    await nextTick()
+
+    const chartDom = document.getElementById('radarChart')
+    if (!chartDom) return
+
+    if (radarInstance) {
+      radarInstance.dispose()
+    }
+
+    radarInstance = echarts.init(chartDom)
+
+    // ⭐ 渐变色
+    const gradientColor = new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
+      { offset: 0, color: 'rgba(64,158,255,0.45)' },
+      { offset: 1, color: 'rgba(64,158,255,0.12)' }
+    ])
+
+    const option = {
+      color: ['#1677FF'],
+      title: {
+        text: '学生能力雷达分析',
+        left: 'center',
+        top: 4,
+        textStyle: {
+          fontSize: 17,
+          fontWeight: 700,
+          color: '#1f2329'
+        }
+      },
+
+      tooltip: {
+        trigger: 'item',
+        borderColor: '#dcdfe6',
+        backgroundColor: 'rgba(255,255,255,0.96)',
+        textStyle: { color: '#303133' },
+        formatter: (params) => {
+          return params.value
+            .map((v, i) => {
+              const indicator = indicators[i] || {}
+              const hasRawScore = Number(indicator.maxScore) > 0
+              const scoreText = hasRawScore
+                ? ` (${Number(indicator.actualScore || 0).toFixed(1)}/${Number(indicator.maxScore).toFixed(1)}分)`
+                : ''
+              return `${indicator.rawName || indicator.name}: ${Number(v || 0).toFixed(1)}%${scoreText}`
+            })
+            .join('<br/>')
+        }
+      },
+
+      radar: {
+        indicator: indicators,
+        center: ['50%', '55%'],
+        radius: '54%',
+        splitNumber: 5,
+
+        axisName: {
+          color: (name, indicator) => indicator.color || '#303133',
+          fontSize: 12,
+          lineHeight: 16,
+          padding: [2, 4],
+          formatter: (name) => name
+        },
+
+        splitLine: {
+          lineStyle: {
+            color: ['#edf0f5']
+          }
+        },
+
+        splitArea: {
+          areaStyle: {
+            color: ['#fbfcff', '#ffffff']
+          }
+        },
+
+        axisLine: {
+          lineStyle: {
+            color: '#e4e7ed'
+          }
+        }
+      },
+
+      series: [
+        {
+          type: 'radar',
+          smooth: true,
+
+          data: [
+            {
+              value: values,
+              name: '能力值',
+
+              symbol: 'circle',
+              symbolSize: 5,
+
+              lineStyle: {
+                width: 2.5,
+                color: '#1677FF'
+              },
+
+              itemStyle: {
+                color: '#1677FF',
+                borderColor: '#fff',
+                borderWidth: 2
+              },
+
+              areaStyle: {
+                color: gradientColor,
+                shadowBlur: 14,
+                shadowColor: 'rgba(64,158,255,0.25)'
+              }
+            }
+          ]
+        }
+      ],
+
+      animationDuration: 1200
+    }
+
+    radarInstance.setOption(option)
+
+    // ✅ 自适应
+   window.addEventListener('resize', () => {
+  if (radarInstance) {
+    radarInstance.resize()
+  }
+})
+
   } catch (error) {
     console.error("雷达图获取失败", error)
+    ElMessage.error("雷达图加载失败")
   } finally {
     radarLoading.value = false
   }
@@ -718,6 +891,48 @@ const initEcharts = async () => {
 
 const generateAiReport = async () => {
   isGeneratingAi.value = true
+  aiReportText.value = ""
+  const token = localStorage.getItem("token") || ""
+  const params = new URLSearchParams({
+    studentId: String(currentStudentId.value),
+    courseId: String(currentCourseId.value),
+    intent: "job",
+    token
+  })
+
+  if (window.EventSource && token) {
+    const source = new EventSource(`${hturl}/diagnosis/streamReport?${params.toString()}`)
+    let hasChunk = false
+
+    source.addEventListener("diagnosis", (event) => {
+      hasChunk = true
+      aiReportText.value += event.data || ""
+    })
+
+    source.addEventListener("done", () => {
+      source.close()
+      isGeneratingAi.value = false
+      if (!hasChunk) {
+        aiReportText.value = "AI 诊断完成，但未返回有效内容。"
+      }
+      ElMessage.success("AI 诊断报告已生成！")
+    })
+
+    source.onerror = async () => {
+      source.close()
+      if (hasChunk) {
+        isGeneratingAi.value = false
+        return
+      }
+      await generateAiReportFallback()
+    }
+    return
+  }
+
+  await generateAiReportFallback()
+}
+
+const generateAiReportFallback = async () => {
   aiReportText.value = "AI 教授正在飞速思考，为您深度剖析该生学情，请稍候..."
   try {
     const res = await axios.get('/diagnosis/getAiReport', {
@@ -726,7 +941,10 @@ const generateAiReport = async () => {
     const resp = res?.data || {}
     const code = resp.code ?? resp._code
     if (code === 200) {
-      aiReportText.value = resp.data
+      const report = typeof resp.data === 'string'
+        ? resp.data
+        : resp.data?.data || resp.msg
+      aiReportText.value = report && report !== 'success' ? report : "暂无报告"
       ElMessage.success("AI 诊断报告已生成！")
     } else {
       aiReportText.value = "生成失败，请重试。"

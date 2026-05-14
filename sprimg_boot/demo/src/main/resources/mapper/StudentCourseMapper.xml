@@ -20,7 +20,10 @@
         yt.yId as ytid,
         yt.yAll as ytname,
         c.cId as cid,
-        c.cName as cname
+        c.cName as cname,
+        tk.w_regular as wregular,
+        tk.w_test as wtest,
+        tk.w_exam as wexam
         from teaching tk
         inner join studentinfo s on s.sClassId = tk.tcClassId
         left join courseinfo cr on tk.tcCourseId = cr.crId
@@ -28,6 +31,13 @@
         left join yearterm yt on tk.tcTermId = yt.yId
         left join classinfo c on tk.tcClassId = c.cId
         where s.sAccountId = #{uid}
+        and tk.tcId = (
+            select max(tk2.tcId)
+            from teaching tk2
+            where tk2.tcTermId = tk.tcTermId
+              and tk2.tcClassId = tk.tcClassId
+              and tk2.tcCourseId = tk.tcCourseId
+        )
         <if test="query != null and query.qkey != null and query.qkey != ''">
             and (
             cr.crName like concat('%', #{query.qkey}, '%')

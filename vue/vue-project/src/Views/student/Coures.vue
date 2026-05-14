@@ -55,6 +55,15 @@
         <el-table-column prop="tname" label="任课教师" width="120" align="center" />
         <el-table-column prop="ytname" label="学期" min-width="140" align="center" />
         <el-table-column prop="cname" label="班级" min-width="140" align="center" />
+        <el-table-column label="成绩权重" min-width="180" align="center">
+          <template #default="scope">
+            <el-tag size="small" type="info">
+              期末 {{ formatWeight(scope.row.wexam) }} /
+              平时 {{ formatWeight(scope.row.wregular) }} /
+              测试 {{ formatWeight(scope.row.wtest) }}
+            </el-tag>
+          </template>
+        </el-table-column>
       </el-table>
 
       <div class="pager-box">
@@ -92,6 +101,8 @@ const pagination = reactive({
   pageSize: 10,
   total: 0
 })
+
+const formatWeight = (value) => `${Math.round(Number(value || 0) * 100)}%`
 
 const loadTermList = async () => {
   try {

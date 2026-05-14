@@ -170,6 +170,17 @@ public class ScoreinfoServiceImpl
     private void reverseCalculateSubScores(Scoreinfo score, double weightReg, double weightTest, double weightExam) {
         if (score.getScscore() == null) return;
 
+        double weightSum = weightReg + weightTest + weightExam;
+        if (weightReg < 0 || weightTest < 0 || weightExam <= 0 || weightSum <= 0) {
+            weightReg = 0.3;
+            weightTest = 0.2;
+            weightExam = 0.5;
+            weightSum = 1.0;
+        }
+        weightReg = weightReg / weightSum;
+        weightTest = weightTest / weightSum;
+        weightExam = weightExam / weightSum;
+
         double totalScore = score.getScscore().doubleValue();
         Random random = new Random();
 
@@ -198,6 +209,34 @@ public class ScoreinfoServiceImpl
         score.setScExam(BigDecimal.valueOf(exam).setScale(1, RoundingMode.HALF_UP));
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void refreshCompositionScores(Integer termId,
+                                         Integer classId,
+                                         Integer courseId,
+                                         Double wRegular,
+                                         Double wTest,
+                                         Double wExam) {
+        if (termId == null || classId == null || courseId == null) {
+            return;
+        }
+
+        double weightReg = wRegular == null ? 0.3 : wRegular;
+        double weightTest = wTest == null ? 0.2 : wTest;
+        double weightExam = wExam == null ? 0.5 : wExam;
+
+        List<Scoreinfo> scores = this.list(new QueryWrapper<Scoreinfo>()
+                .eq("scTermId", termId)
+                .eq("scClassId", classId)
+                .eq("scCourseId", courseId)
+                .isNotNull("scScore"));
+
+        for (Scoreinfo score : scores) {
+            reverseCalculateSubScores(score, weightReg, weightTest, weightExam);
+            this.updateById(score);
+        }
+    }
+
 
     /**
      * 【暴露给 Controller 的成绩保存入口】
@@ -220,8 +259,10 @@ public class ScoreinfoServiceImpl
                 // 根据当前成绩记录的课程和班级，去 teaching 表找该老师设置的权重
                 com.demo.model.Teaching teaching = teachingMapper.selectOne(
                         new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<com.demo.model.Teaching>()
+                                .eq("tcTermId", score.getSctermid())
                                 .eq("tcCourseId", score.getSccourseid())
                                 .eq("tcClassId", score.getScclassid())
+                                .orderByDesc("tcId")
                                 .last("LIMIT 1")
                 );
 

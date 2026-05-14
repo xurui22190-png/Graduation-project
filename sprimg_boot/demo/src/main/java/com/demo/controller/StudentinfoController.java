@@ -67,7 +67,19 @@ public class StudentinfoController {
 
         LambdaQueryWrapper<Vwstudent> wrapper = new LambdaQueryWrapper<>();
 
-        // ... 下面的查询条件逻辑保持不变 ...
+        if (StringUtils.hasText(query.getQkey())) {
+            String qkey = query.getQkey().trim();
+            wrapper.and(w -> w.like(Vwstudent::getSno, qkey)
+                    .or()
+                    .like(Vwstudent::getSname, qkey));
+        }
+        if (StringUtils.hasText(query.getSsex())) {
+            wrapper.eq(Vwstudent::getSsex, query.getSsex().trim());
+        }
+        if (query.getSclassid() != null && query.getSclassid() > 0) {
+            wrapper.eq(Vwstudent::getSclassid, query.getSclassid());
+        }
+        wrapper.orderByDesc(Vwstudent::getSid);
 
         IPage<Vwstudent> pageResult = vwstudentService.page(pager, wrapper);
         return ResponsePageResult.PageResult(pageResult);

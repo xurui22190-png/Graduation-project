@@ -3,7 +3,7 @@ import { hturl } from "@/store/config.js";
 import router from "@/router";
 
 axios.defaults.baseURL = hturl;
-axios.defaults.timeout = 18000;
+axios.defaults.timeout = 120000;
 
 axios.interceptors.request.use(
   (config) => {

@@ -11,7 +11,7 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 30/04/2026 17:11:33
+ Date: 12/05/2026 20:02:32
 */
 
 SET NAMES utf8mb4;
@@ -31,11 +31,12 @@ CREATE TABLE `academic_warning`  (
   `wStatus` int NULL DEFAULT 0 COMMENT '处理状态：0-未处理，1-已谈话，2-已消除',
   `wCreateDate` datetime NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`wId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of academic_warning
 -- ----------------------------
+INSERT INTO `academic_warning` VALUES (1, 41, 3, '高危预警', 0.9999517459480897, '系统综合评估该生平时表现、阶段测试和课程成绩，计算出综合学业风险指数为 100%，建议辅导员或导师重点关注并及时干预。', 0, '2026-05-11 14:49:10');
 
 -- ----------------------------
 -- Table structure for classinfo
@@ -262,99 +263,11 @@ CREATE TABLE `score_detail`  (
   `actual_score` double NOT NULL COMMENT '学生该知识点实际得分',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '录入时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 675 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '学生知识点成绩明细表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 835 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '学生知识点成绩明细表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of score_detail
 -- ----------------------------
-INSERT INTO `score_detail` VALUES (337, 1, 3, 17, 100, 80.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (338, 1, 3, 18, 100, 97.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (339, 1, 3, 19, 100, 95.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (340, 1, 3, 20, 100, 87.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (341, 1, 3, 21, 100, 89.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (342, 1, 3, 22, 100, 86.8, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (343, 1, 3, 23, 100, 83.6, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (344, 1, 3, 24, 100, 66.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (345, 2, 3, 17, 100, 91.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (346, 2, 3, 18, 100, 72.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (347, 2, 3, 19, 100, 86.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (348, 2, 3, 20, 100, 87.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (349, 2, 3, 21, 100, 99.9, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (350, 2, 3, 22, 100, 95.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (351, 2, 3, 23, 100, 100, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (352, 2, 3, 24, 100, 84.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (353, 3, 3, 17, 100, 60.9, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (354, 3, 3, 18, 100, 74.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (355, 3, 3, 19, 100, 65.8, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (356, 3, 3, 20, 100, 63.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (357, 3, 3, 21, 100, 64.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (358, 3, 3, 22, 100, 70, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (359, 3, 3, 23, 100, 76.1, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (360, 3, 3, 24, 100, 46.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (361, 4, 3, 17, 100, 81.1, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (362, 4, 3, 18, 100, 75.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (363, 4, 3, 19, 100, 65.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (364, 4, 3, 20, 100, 68.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (365, 4, 3, 21, 100, 67.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (366, 4, 3, 22, 100, 75.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (367, 4, 3, 23, 100, 50.6, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (368, 4, 3, 24, 100, 64.6, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (369, 17, 3, 17, 100, 69.9, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (370, 17, 3, 18, 100, 69.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (371, 17, 3, 19, 100, 68.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (372, 17, 3, 20, 100, 67, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (373, 17, 3, 21, 100, 74.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (374, 17, 3, 22, 100, 70.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (375, 17, 3, 23, 100, 62.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (376, 17, 3, 24, 100, 46.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (377, 21, 3, 17, 100, 71.9, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (378, 21, 3, 18, 100, 79.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (379, 21, 3, 19, 100, 68.6, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (380, 21, 3, 20, 100, 74.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (381, 21, 3, 21, 100, 80.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (382, 21, 3, 22, 100, 47, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (383, 21, 3, 23, 100, 82.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (384, 21, 3, 24, 100, 71.6, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (385, 25, 3, 17, 100, 71.8, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (386, 25, 3, 18, 100, 70.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (387, 25, 3, 19, 100, 61.9, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (388, 25, 3, 20, 100, 72.7, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (389, 25, 3, 21, 100, 57.1, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (390, 25, 3, 22, 100, 56.1, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (391, 25, 3, 23, 100, 49.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (392, 25, 3, 24, 100, 60.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (393, 29, 3, 17, 100, 76.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (394, 29, 3, 18, 100, 76.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (395, 29, 3, 19, 100, 82.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (396, 29, 3, 20, 100, 63.2, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (397, 29, 3, 21, 100, 76.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (398, 29, 3, 22, 100, 75.4, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (399, 29, 3, 23, 100, 82.5, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (400, 29, 3, 24, 100, 75.3, '2026-04-30 14:48:21');
-INSERT INTO `score_detail` VALUES (417, 31, 3, 17, 100, 79.5, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (418, 31, 3, 18, 100, 94.9, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (419, 31, 3, 19, 100, 89.9, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (420, 31, 3, 20, 100, 95.9, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (421, 31, 3, 21, 100, 71, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (422, 31, 3, 22, 100, 85.7, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (423, 31, 3, 23, 100, 94.9, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (424, 31, 3, 24, 100, 88.6, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (425, 32, 3, 17, 100, 100, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (426, 32, 3, 18, 100, 100, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (427, 32, 3, 19, 100, 75.5, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (428, 32, 3, 20, 100, 98.8, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (429, 32, 3, 21, 100, 100, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (430, 32, 3, 22, 100, 97.3, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (431, 32, 3, 23, 100, 100, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (432, 32, 3, 24, 100, 95.6, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (433, 33, 3, 17, 100, 81.3, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (434, 33, 3, 18, 100, 71.6, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (435, 33, 3, 19, 100, 69.9, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (436, 33, 3, 20, 100, 66.1, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (437, 33, 3, 21, 100, 70.2, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (438, 33, 3, 22, 100, 52.1, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (439, 33, 3, 23, 100, 70, '2026-04-30 14:48:26');
-INSERT INTO `score_detail` VALUES (440, 33, 3, 24, 100, 76.5, '2026-04-30 14:48:26');
 INSERT INTO `score_detail` VALUES (441, 34, 3, 17, 100, 50.1, '2026-04-30 14:48:26');
 INSERT INTO `score_detail` VALUES (442, 34, 3, 18, 100, 67, '2026-04-30 14:48:26');
 INSERT INTO `score_detail` VALUES (443, 34, 3, 19, 100, 58.5, '2026-04-30 14:48:26');
@@ -461,6 +374,126 @@ INSERT INTO `score_detail` VALUES (671, 2, 8, 412, 100, 94.4, '2026-04-30 17:08:
 INSERT INTO `score_detail` VALUES (672, 2, 8, 413, 100, 83.8, '2026-04-30 17:08:23');
 INSERT INTO `score_detail` VALUES (673, 2, 8, 414, 100, 96.5, '2026-04-30 17:08:23');
 INSERT INTO `score_detail` VALUES (674, 2, 8, 415, 100, 91.8, '2026-04-30 17:08:23');
+INSERT INTO `score_detail` VALUES (699, 27, 4, 25, 100, 88, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (700, 27, 4, 26, 100, 99.3, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (701, 27, 4, 27, 100, 78.1, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (702, 27, 4, 28, 100, 100, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (703, 27, 4, 29, 100, 73.5, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (704, 27, 4, 30, 100, 100, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (705, 27, 4, 31, 100, 92.4, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (706, 27, 4, 32, 100, 85.2, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (707, 36, 4, 25, 100, 97.2, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (708, 36, 4, 26, 100, 81.5, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (709, 36, 4, 27, 100, 100, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (710, 36, 4, 28, 100, 94.9, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (711, 36, 4, 29, 100, 86.7, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (712, 36, 4, 30, 100, 100, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (713, 36, 4, 31, 100, 100, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (714, 36, 4, 32, 100, 95.4, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (715, 37, 4, 25, 100, 77.7, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (716, 37, 4, 26, 100, 84.6, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (717, 37, 4, 27, 100, 71.4, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (718, 37, 4, 28, 100, 76, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (719, 37, 4, 29, 100, 65.2, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (720, 37, 4, 30, 100, 63.5, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (721, 37, 4, 31, 100, 72.7, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (722, 37, 4, 32, 100, 58.1, '2026-05-03 19:13:11');
+INSERT INTO `score_detail` VALUES (739, 1, 3, 17, 12.5, 11.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (740, 1, 3, 18, 12.5, 10.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (741, 1, 3, 19, 12.5, 11.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (742, 1, 3, 20, 12.5, 10.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (743, 1, 3, 21, 12.5, 10.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (744, 1, 3, 22, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (745, 1, 3, 23, 12.5, 10.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (746, 1, 3, 24, 12.5, 9.9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (747, 2, 3, 17, 12.5, 12.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (748, 2, 3, 18, 12.5, 12.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (749, 2, 3, 19, 12.5, 12.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (750, 2, 3, 20, 12.5, 12.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (751, 2, 3, 21, 12.5, 11.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (752, 2, 3, 22, 12.5, 11, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (753, 2, 3, 23, 12.5, 12.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (754, 2, 3, 24, 12.5, 11.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (755, 3, 3, 17, 12.5, 9.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (756, 3, 3, 18, 12.5, 8.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (757, 3, 3, 19, 12.5, 9.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (758, 3, 3, 20, 12.5, 9.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (759, 3, 3, 21, 12.5, 9.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (760, 3, 3, 22, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (761, 3, 3, 23, 12.5, 8.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (762, 3, 3, 24, 12.5, 7.9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (763, 4, 3, 17, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (764, 4, 3, 18, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (765, 4, 3, 19, 12.5, 9.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (766, 4, 3, 20, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (767, 4, 3, 21, 12.5, 9.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (768, 4, 3, 22, 12.5, 9.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (769, 4, 3, 23, 12.5, 9.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (770, 4, 3, 24, 12.5, 9.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (771, 17, 3, 17, 12.5, 6.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (772, 17, 3, 18, 12.5, 8.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (773, 17, 3, 19, 12.5, 9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (774, 17, 3, 20, 12.5, 7.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (775, 17, 3, 21, 12.5, 8.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (776, 17, 3, 22, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (777, 17, 3, 23, 12.5, 8.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (778, 17, 3, 24, 12.5, 9.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (779, 21, 3, 17, 12.5, 10.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (780, 21, 3, 18, 12.5, 9.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (781, 21, 3, 19, 12.5, 8.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (782, 21, 3, 20, 12.5, 8.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (783, 21, 3, 21, 12.5, 9.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (784, 21, 3, 22, 12.5, 9.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (785, 21, 3, 23, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (786, 21, 3, 24, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (787, 25, 3, 17, 12.5, 3.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (788, 25, 3, 18, 12.5, 9.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (789, 25, 3, 19, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (790, 25, 3, 20, 12.5, 8.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (791, 25, 3, 21, 12.5, 9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (792, 25, 3, 22, 12.5, 9.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (793, 25, 3, 23, 12.5, 8.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (794, 25, 3, 24, 12.5, 8.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (795, 29, 3, 17, 12.5, 8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (796, 29, 3, 18, 12.5, 10.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (797, 29, 3, 19, 12.5, 9.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (798, 29, 3, 20, 12.5, 11.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (799, 29, 3, 21, 12.5, 10.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (800, 29, 3, 22, 12.5, 10.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (801, 29, 3, 23, 12.5, 9.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (802, 29, 3, 24, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (803, 31, 3, 17, 12.5, 10.9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (804, 31, 3, 18, 12.5, 11.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (805, 31, 3, 19, 12.5, 11, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (806, 31, 3, 20, 12.5, 10.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (807, 31, 3, 21, 12.5, 10.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (808, 31, 3, 22, 12.5, 12.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (809, 31, 3, 23, 12.5, 11.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (810, 31, 3, 24, 12.5, 11.2, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (811, 32, 3, 17, 12.5, 8.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (812, 32, 3, 18, 12.5, 8.8, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (813, 32, 3, 19, 12.5, 8.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (814, 32, 3, 20, 12.5, 9.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (815, 32, 3, 21, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (816, 32, 3, 22, 12.5, 8.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (817, 32, 3, 23, 12.5, 10, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (818, 32, 3, 24, 12.5, 8.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (819, 33, 3, 17, 12.5, 10.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (820, 33, 3, 18, 12.5, 10.1, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (821, 33, 3, 19, 12.5, 11.3, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (822, 33, 3, 20, 12.5, 10.4, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (823, 33, 3, 21, 12.5, 10.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (824, 33, 3, 22, 12.5, 10.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (825, 33, 3, 23, 12.5, 10.9, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (826, 33, 3, 24, 12.5, 10.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (827, 41, 3, 17, 12.5, 0.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (828, 41, 3, 18, 12.5, 0.7, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (829, 41, 3, 19, 12.5, 0.5, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (830, 41, 3, 20, 12.5, 0, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (831, 41, 3, 21, 12.5, 0, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (832, 41, 3, 22, 12.5, 0, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (833, 41, 3, 23, 12.5, 0.6, '2026-05-11 15:20:44');
+INSERT INTO `score_detail` VALUES (834, 41, 3, 24, 12.5, 0.2, '2026-05-11 15:20:44');
 
 -- ----------------------------
 -- Table structure for scoreinfo
@@ -497,17 +530,17 @@ INSERT INTO `scoreinfo` VALUES (9, 34, 1, 2, 1, 0.0, 0, '2026-04-29 18:04:37', 1
 INSERT INTO `scoreinfo` VALUES (10, 35, 1, 2, 1, 0.0, 0, '2026-04-29 18:04:37', 1, 0.00, 0.00, 0.00);
 INSERT INTO `scoreinfo` VALUES (11, 42, 1, 2, 1, 0.0, 0, '2026-04-29 18:04:37', 1, 0.00, 0.00, 0.00);
 INSERT INTO `scoreinfo` VALUES (12, 45, 1, 2, 1, 0.0, 0, '2026-04-29 18:04:37', 1, 0.00, 0.00, 0.00);
-INSERT INTO `scoreinfo` VALUES (13, 1, 1, 1, 3, 88.0, 1, '2026-04-30 13:17:32', 3, 88.90, 91.20, 86.20);
-INSERT INTO `scoreinfo` VALUES (14, 2, 1, 1, 3, 93.0, 1, '2026-04-30 13:17:32', 3, 91.30, 95.10, 93.20);
-INSERT INTO `scoreinfo` VALUES (15, 3, 1, 1, 3, 70.0, 1, '2026-04-30 13:17:32', 3, 71.50, 69.10, 69.50);
-INSERT INTO `scoreinfo` VALUES (16, 4, 1, 1, 3, 72.0, 1, '2026-04-30 13:17:32', 3, 73.30, 74.00, 70.40);
-INSERT INTO `scoreinfo` VALUES (17, 17, 1, 1, 3, 66.0, 1, '2026-04-30 13:17:32', 3, 73.70, 68.70, 60.30);
-INSERT INTO `scoreinfo` VALUES (18, 21, 1, 1, 3, 76.0, 1, '2026-04-30 13:17:32', 3, 75.00, 75.40, 76.80);
-INSERT INTO `scoreinfo` VALUES (19, 25, 1, 1, 3, 65.0, 1, '2026-04-30 13:17:32', 3, 64.30, 67.30, 64.50);
-INSERT INTO `scoreinfo` VALUES (20, 29, 1, 1, 3, 80.0, 1, '2026-04-30 13:17:32', 3, 85.40, 83.40, 75.40);
-INSERT INTO `scoreinfo` VALUES (21, 31, 1, 1, 3, 90.0, 1, '2026-04-30 13:17:32', 3, 90.30, 85.10, 91.80);
-INSERT INTO `scoreinfo` VALUES (22, 32, 1, 1, 3, 100.0, 1, '2026-04-30 13:17:32', 3, 100.00, 100.00, 100.00);
-INSERT INTO `scoreinfo` VALUES (23, 33, 1, 1, 3, 0.0, 0, '2026-04-30 13:17:32', 3, 0.00, 0.00, 0.00);
+INSERT INTO `scoreinfo` VALUES (13, 1, 1, 1, 3, 88.0, 1, '2026-04-30 13:17:32', 3, 95.40, 83.50, 84.80);
+INSERT INTO `scoreinfo` VALUES (14, 2, 1, 1, 3, 97.0, 1, '2026-04-30 13:17:32', 3, 100.00, 97.00, 95.70);
+INSERT INTO `scoreinfo` VALUES (15, 3, 1, 1, 3, 70.0, 1, '2026-04-30 13:17:32', 3, 77.40, 66.90, 66.80);
+INSERT INTO `scoreinfo` VALUES (16, 4, 1, 1, 3, 72.0, 1, '2026-04-30 13:17:32', 3, 79.10, 70.30, 68.90);
+INSERT INTO `scoreinfo` VALUES (17, 17, 1, 1, 3, 66.0, 1, '2026-04-30 13:17:32', 3, 67.00, 67.20, 65.60);
+INSERT INTO `scoreinfo` VALUES (18, 21, 1, 1, 3, 76.0, 1, '2026-04-30 13:17:32', 3, 82.20, 79.60, 73.30);
+INSERT INTO `scoreinfo` VALUES (19, 25, 1, 1, 3, 65.0, 1, '2026-04-30 13:17:32', 3, 68.50, 67.60, 63.50);
+INSERT INTO `scoreinfo` VALUES (20, 29, 1, 1, 3, 80.0, 1, '2026-04-30 13:17:32', 3, 87.30, 78.90, 76.90);
+INSERT INTO `scoreinfo` VALUES (21, 31, 1, 1, 3, 90.0, 1, '2026-04-30 13:17:32', 3, 96.80, 92.00, 87.10);
+INSERT INTO `scoreinfo` VALUES (22, 32, 1, 1, 3, 77.0, 1, '2026-05-09 14:13:35', 3, 81.90, 75.80, 74.90);
+INSERT INTO `scoreinfo` VALUES (23, 33, 1, 1, 3, 85.0, 1, '2026-05-09 14:13:35', 3, 90.10, 87.40, 82.80);
 INSERT INTO `scoreinfo` VALUES (24, 41, 1, 1, 3, 0.0, 0, '2026-04-30 13:17:32', 3, 0.00, 0.00, 0.00);
 INSERT INTO `scoreinfo` VALUES (25, 9, 1, 3, 4, 59.0, 1, '2026-04-30 13:42:21', 3, 66.60, 60.10, 54.00);
 INSERT INTO `scoreinfo` VALUES (26, 10, 1, 3, 4, 88.5, 1, '2026-04-30 14:55:09', 3, 87.00, 90.70, 88.50);
@@ -515,9 +548,9 @@ INSERT INTO `scoreinfo` VALUES (27, 11, 1, 3, 4, 95.0, 1, '2026-04-30 14:55:09',
 INSERT INTO `scoreinfo` VALUES (28, 12, 1, 3, 4, 72.0, 1, '2026-04-30 14:55:09', 3, 76.30, 74.10, 68.60);
 INSERT INTO `scoreinfo` VALUES (29, 19, 1, 3, 4, 58.0, 1, '2026-04-30 14:55:09', 3, 60.00, 57.50, 57.00);
 INSERT INTO `scoreinfo` VALUES (30, 23, 1, 3, 4, 81.5, 1, '2026-04-30 14:55:09', 3, 88.40, 77.00, 79.20);
-INSERT INTO `scoreinfo` VALUES (31, 27, 1, 3, 4, 0.0, 0, '2026-04-30 13:42:21', 3, 0.00, 0.00, 0.00);
-INSERT INTO `scoreinfo` VALUES (32, 36, 1, 3, 4, 0.0, 0, '2026-04-30 13:42:21', 3, 0.00, 0.00, 0.00);
-INSERT INTO `scoreinfo` VALUES (33, 37, 1, 3, 4, 0.0, 0, '2026-04-30 13:42:21', 3, 0.00, 0.00, 0.00);
+INSERT INTO `scoreinfo` VALUES (31, 27, 1, 3, 4, 88.5, 1, '2026-05-03 19:13:11', 3, 87.20, 91.60, 88.00);
+INSERT INTO `scoreinfo` VALUES (32, 36, 1, 3, 4, 95.0, 1, '2026-05-03 19:13:11', 3, 96.30, 90.10, 96.20);
+INSERT INTO `scoreinfo` VALUES (33, 37, 1, 3, 4, 72.0, 1, '2026-05-03 19:13:11', 3, 76.20, 70.60, 70.10);
 INSERT INTO `scoreinfo` VALUES (34, 38, 1, 3, 4, 0.0, 0, '2026-04-30 13:42:21', 3, 0.00, 0.00, 0.00);
 INSERT INTO `scoreinfo` VALUES (35, 43, 1, 3, 4, 0.0, 0, '2026-04-30 13:42:21', 3, 0.00, 0.00, 0.00);
 INSERT INTO `scoreinfo` VALUES (36, 2, 1, 1, 5, 98.0, 1, NULL, NULL, 100.00, 98.90, 96.40);
@@ -646,13 +679,13 @@ CREATE TABLE `teaching`  (
 INSERT INTO `teaching` VALUES (1, 1, 1, 1, 1, 0.50, 0.30, 0.20);
 INSERT INTO `teaching` VALUES (2, 1, 1, 2, 1, 0.50, 0.30, 0.20);
 INSERT INTO `teaching` VALUES (3, 1, 2, 1, 1, 0.50, 0.30, 0.20);
-INSERT INTO `teaching` VALUES (4, 1, 4, 3, 3, 0.50, 0.30, 0.20);
+INSERT INTO `teaching` VALUES (4, 1, 4, 3, 3, 0.70, 0.30, 0.00);
 INSERT INTO `teaching` VALUES (5, 1, 3, 4, 3, 0.50, 0.30, 0.20);
 INSERT INTO `teaching` VALUES (6, 1, 1, 2, 5, 0.50, 0.30, 0.20);
 INSERT INTO `teaching` VALUES (7, 1, 2, 2, 5, 0.50, 0.30, 0.20);
 INSERT INTO `teaching` VALUES (8, 1, 3, 1, 6, 0.60, 0.20, 0.20);
 INSERT INTO `teaching` VALUES (9, 1, 4, 1, 6, 0.60, 0.20, 0.20);
-INSERT INTO `teaching` VALUES (10, 1, 1, 3, 3, 0.00, 0.00, 0.00);
+INSERT INTO `teaching` VALUES (10, 1, 1, 3, 3, 0.70, 0.30, 0.00);
 INSERT INTO `teaching` VALUES (11, 1, 2, 5, 4, 0.70, 0.20, 0.10);
 INSERT INTO `teaching` VALUES (12, 1, 6, 6, 4, 0.60, 0.20, 0.20);
 INSERT INTO `teaching` VALUES (13, 1, 3, 7, 201, 0.50, 0.30, 0.20);
@@ -777,12 +810,14 @@ CREATE TABLE `yearterm`  (
   `yTerm` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '学期',
   `yAll` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '全称',
   PRIMARY KEY (`yId`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '学年学期表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '学年学期表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of yearterm
 -- ----------------------------
 INSERT INTO `yearterm` VALUES (1, '2025', '1', '2025-2026 第一学期');
+INSERT INTO `yearterm` VALUES (2, '2026', '2', '2025-2026 第二学期');
+INSERT INTO `yearterm` VALUES (3, '2026', '1', '2026-2027 第一学期');
 
 -- ----------------------------
 -- View structure for vwclass

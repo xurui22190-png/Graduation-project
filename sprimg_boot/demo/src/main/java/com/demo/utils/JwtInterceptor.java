@@ -25,6 +25,11 @@ public class JwtInterceptor implements HandlerInterceptor {
             token = token.substring(7);
         }
 
+        // EventSource 不能设置 Authorization 请求头，允许流式接口通过 query 携带 token。
+        if (token == null || token.trim().isEmpty()) {
+            token = request.getParameter("token");
+        }
+
         // Token不存在情况处理
         if (token == null || token.trim().isEmpty()) {
             response.sendError(401, "未提供有效的token");

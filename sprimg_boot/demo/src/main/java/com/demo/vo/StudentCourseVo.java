@@ -49,4 +49,12 @@ public class StudentCourseVo {
 
     @ApiModelProperty(value = "班级名称")
     private String cname;
+    @ApiModelProperty(value = "成绩权重-平时")
+    private Double wregular;
+
+    @ApiModelProperty(value = "成绩权重-测试")
+    private Double wtest;
+
+    @ApiModelProperty(value = "成绩权重-期末")
+    private Double wexam;
 }

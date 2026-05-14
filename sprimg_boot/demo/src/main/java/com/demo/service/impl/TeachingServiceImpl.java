@@ -16,6 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @Service
 public class TeachingServiceImpl extends ServiceImpl<TeachingMapper, Teaching> implements TeachingService {
 
@@ -59,7 +64,34 @@ public class TeachingServiceImpl extends ServiceImpl<TeachingMapper, Teaching> i
         wrapper.orderByDesc(Vwteaching::getTcid);
 
         IPage<Vwteaching> pageData = vwteachingMapper.selectPage(pager, wrapper);
+        fillWeights(pageData.getRecords());
         return ResponsePageResult.PageResult(pageData);
+    }
+
+    private void fillWeights(List<Vwteaching> records) {
+        if (records == null || records.isEmpty()) {
+            return;
+        }
+
+        List<Integer> ids = records.stream()
+                .map(Vwteaching::getTcid)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if (ids.isEmpty()) {
+            return;
+        }
+
+        Map<Integer, Teaching> teachingMap = this.listByIds(ids).stream()
+                .collect(Collectors.toMap(Teaching::getTcid, item -> item));
+
+        for (Vwteaching record : records) {
+            Teaching teaching = teachingMap.get(record.getTcid());
+            if (teaching != null) {
+                record.setWregular(teaching.getWregular());
+                record.setWtest(teaching.getWtest());
+                record.setWexam(teaching.getWexam());
+            }
+        }
     }
 
     @Override

@@ -7,35 +7,54 @@
 
     <select id="getStudentScoreList" resultType="com.demo.vo.StudentScoreVo">
         select
-        scId as scid,
-        sid as sid,
-        sNo as sno,
-        sName as sname,
-        scTermId as sctermid,
-        yYear as yyear,
-        yTerm as yterm,
-        yAll as yall,
-        scCourseId as sccourseid,
-        crCode as crcode,
-        crName as crname,
-        scScore as scscore,
-        scStatus as scstatus,
-        tName as tname
-        from vwscores
+        vs.scId as scid,
+        vs.scStudentId as sid,
+        vs.sNo as sno,
+        vs.sName as sname,
+        vs.scTermId as sctermid,
+        vs.scClassId as scclassid,
+        vs.yYear as yyear,
+        vs.yTerm as yterm,
+        vs.yAll as yall,
+        vs.scCourseId as sccourseid,
+        vs.crCode as crcode,
+        vs.crName as crname,
+        vs.scScore as scscore,
+        sc.sc_regular as scRegular,
+        sc.sc_test as scTest,
+        sc.sc_exam as scExam,
+        coalesce(tk.w_regular, 0.30) as wregular,
+        coalesce(tk.w_test, 0.20) as wtest,
+        coalesce(tk.w_exam, 0.50) as wexam,
+        vs.scStatus as scstatus,
+        coalesce(vs.tName, tt.tName) as tname
+        from vwscores vs
+        left join scoreinfo sc on sc.scId = vs.scId
+        left join teaching tk on tk.tcTermId = vs.scTermId
+            and tk.tcClassId = vs.scClassId
+            and tk.tcCourseId = vs.scCourseId
+            and tk.tcId = (
+                select max(tk2.tcId)
+                from teaching tk2
+                where tk2.tcTermId = vs.scTermId
+                  and tk2.tcClassId = vs.scClassId
+                  and tk2.tcCourseId = vs.scCourseId
+            )
+        left join teacherinfo tt on tt.tId = tk.tcTeacherId
         where 1 = 1
         <if test="dto.sid != null and dto.sid > 0">
-            and sid = #{dto.sid}
+            and vs.scStudentId = #{dto.sid}
         </if>
         <if test="dto.termid != null and dto.termid > 0">
-            and scTermId = #{dto.termid}
+            and vs.scTermId = #{dto.termid}
         </if>
         <if test="dto.qkey != null and dto.qkey != ''">
             and (
-            crName like concat('%', #{dto.qkey}, '%')
-            or crCode like concat('%', #{dto.qkey}, '%')
+            vs.crName like concat('%', #{dto.qkey}, '%')
+            or vs.crCode like concat('%', #{dto.qkey}, '%')
             )
         </if>
-        order by scTermId desc, scId desc
+        order by vs.scTermId desc, vs.scId desc
     </select>
 
 </mapper>

@@ -106,5 +106,16 @@ public class Vwteaching implements Serializable {
     @TableField("tAddress")
     private String taddress;
 
+    @ApiModelProperty(value = "成绩权重-平时")
+    @TableField(exist = false)
+    private Double wregular;
+
+    @ApiModelProperty(value = "成绩权重-测试")
+    @TableField(exist = false)
+    private Double wtest;
+
+    @ApiModelProperty(value = "成绩权重-期末")
+    @TableField(exist = false)
+    private Double wexam;
 
 }

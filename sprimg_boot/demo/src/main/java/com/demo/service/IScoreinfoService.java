@@ -21,4 +21,10 @@ public interface IScoreinfoService extends IService<Scoreinfo> {
                                               HttpServletRequest request);
     ResponseResult saveTeacherScores(List<Scoreinfo> scoreList);
     ResponseResult getStudentScoreList(Integer studentId, String qkey, Integer termid);
+    void refreshCompositionScores(Integer termId,
+                                  Integer classId,
+                                  Integer courseId,
+                                  Double wRegular,
+                                  Double wTest,
+                                  Double wExam);
 }

@@ -44,16 +44,16 @@
     WHERE tc.tcTeacherId = #{teacherId}
 
     <if test="dto != null">
-        <if test="dto.tctermid != null and dto.tctermid != 0">
-            AND tc.tcTermId = #{dto.tctermid}
+        <if test="dto.queryTermId != null and dto.queryTermId != 0">
+            AND tc.tcTermId = #{dto.queryTermId}
         </if>
 
-        <if test="dto.tccourseid != null and dto.tccourseid != 0">
-            AND tc.tcCourseId = #{dto.tccourseid}
+        <if test="dto.queryCourseId != null and dto.queryCourseId != 0">
+            AND tc.tcCourseId = #{dto.queryCourseId}
         </if>
 
-        <if test="dto.tcclassid != null and dto.tcclassid != 0">
-            AND tc.tcClassId = #{dto.tcclassid}
+        <if test="dto.queryClassId != null and dto.queryClassId != 0">
+            AND tc.tcClassId = #{dto.queryClassId}
         </if>
 
         <if test="dto.qkey != null and dto.qkey != ''">

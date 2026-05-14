@@ -38,7 +38,7 @@
         <el-table-column prop="classname" label="授课班级" min-width="150" align="center" />
         <el-table-column prop="cgrade" label="年级" width="90" align="center" />
 
-        <!-- <el-table-column label="当前权重(考/平/测)" width="180" align="center">
+        <el-table-column label="当前权重(考/平/测)" width="180" align="center">
           <template #default="scope">
             <el-tag size="small" type="info">
               {{ ((scope.row.w_exam ?? scope.row.wexam ?? 0) * 100).toFixed(0) }}% /
@@ -46,7 +46,7 @@
               {{ ((scope.row.w_test ?? scope.row.wtest ?? 0) * 100).toFixed(0) }}%
             </el-tag>
           </template>
-        </el-table-column> -->
+        </el-table-column>
 
         <el-table-column label="操作" width="240" align="center" fixed="right">
           <template #default="scope">
@@ -58,14 +58,14 @@
             >
               知识点管理
             </el-button>
-            <!-- <el-button
+            <el-button
               type="warning"
               size="small"
               plain
               @click="openWeightDialog(scope.row)"
             >
               权重设置
-            </el-button> -->
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -151,13 +151,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Search, CircleCheck } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/Axios' // 根据实际路径调整
+import request from '@/utils/Axios'
 
 // ==========================================
-// 1. 基础列表逻辑 (修复了 Axios 嵌套包裹问题)
+// 1. 基础列表逻辑
 // ==========================================
 const loading = ref(false)
 const searchKeyword = ref('')
@@ -165,19 +165,30 @@ const searchLoading = ref(false)
 const tableData = ref([])
 const filteredTableData = ref([])
 
+// ✅ 字段统一函数（核心）
+const formatTeaching = (item) => ({
+  ...item,
+  wexam: item.w_exam ?? item.wexam ?? 0,
+  wregular: item.w_regular ?? item.wregular ?? 0,
+  wtest: item.w_test ?? item.wtest ?? 0
+})
+
 const fetchTableData = async () => {
   loading.value = true
   try {
     const response = await request.get('/teaching/getlist')
-
-    // 🌟 核心修复：手动剥离 Axios 的 data 外壳
     const res = response.data
 
     if (res.code === 200 || res._code === 200) {
-      // 你的9条授课记录在里层的 data 属性里
       const realData = res.data || []
-      tableData.value = realData
-      filteredTableData.value = realData
+
+      // 🔥 统一字段（关键）
+      const formattedData = realData.map(formatTeaching)
+
+      tableData.value = formattedData
+      filteredTableData.value = formattedData
+
+      console.log("最新数据：", formattedData)
     } else {
       ElMessage.error(res.msg || res._msg || '获取列表失败')
     }
@@ -189,6 +200,7 @@ const fetchTableData = async () => {
   }
 }
 
+// 搜索
 const handleSearch = () => {
   const keyword = searchKeyword.value.toLowerCase()
   filteredTableData.value = tableData.value.filter(item =>
@@ -199,7 +211,7 @@ const handleSearch = () => {
 }
 
 // ==========================================
-// 2. 知识点管理逻辑 (同步修复 Axios 包裹)
+// 2. 知识点管理
 // ==========================================
 const drawerVisible = ref(false)
 const knowledgeLoading = ref(false)
@@ -220,7 +232,7 @@ const fetchKnowledgeList = async () => {
   knowledgeLoading.value = true
   try {
     const response = await request.get(`/knowledge/list/${currentCourseId.value}`)
-    const res = response.data // 🌟 剥离外壳
+    const res = response.data
 
     if (res.code === 200 || res._code === 200) {
       knowledgeList.value = res.data || []
@@ -240,7 +252,7 @@ const handleAddKnowledgePoint = async () => {
       courseId: currentCourseId.value,
       pointName: newPointName.value.trim()
     })
-    const res = response.data // 🌟 剥离外壳
+    const res = response.data
 
     if (res.code === 200 || res._code === 200) {
       ElMessage.success('添加成功')
@@ -256,7 +268,7 @@ const handleAddKnowledgePoint = async () => {
 
 const handleDeletePoint = async (id) => {
   const response = await request.delete(`/knowledge/delete/${id}`)
-  const res = response.data // 🌟 剥离外壳
+  const res = response.data
 
   if (res.code === 200 || res._code === 200) {
     ElMessage.success('已删除')
@@ -265,52 +277,74 @@ const handleDeletePoint = async (id) => {
 }
 
 // ==========================================
-// 3. 权重设置逻辑 (同步修复 Axios 包裹)
+// 3. 权重设置（核心修复版）
 // ==========================================
 const weightDialogVisible = ref(false)
 const saveWeightLoading = ref(false)
-const currentTeachingId = ref(null)
-const weightForm = reactive({ wExam: 0, wRegular: 0, wTest: 0 })
 
-const totalWeight = computed(() => weightForm.wExam + weightForm.wRegular + weightForm.wTest)
+const weightForm = ref({
+  tcId: null,
+  wExam: 0,
+  wRegular: 0,
+  wTest: 0
+})
 
-// 你的代码里应该有类似这样的方法：
-// 你的代码里应该有类似这样的方法：
+// 总权重
+const totalWeight = computed(() =>
+  weightForm.value.wExam +
+  weightForm.value.wRegular +
+  weightForm.value.wTest
+)
+
+// 打开弹窗
 const openWeightDialog = (row) => {
-  console.log("【调试】点击的行数据：", row) // 👉 看看控制台打印出的 ID 叫 tcId 还是 tcid
+  console.log("点击行数据：", row)
 
   weightForm.value = {
-    // 👉 兼容写法：不管后端传过来的是大写还是小写，都能拿到！
     tcId: row.tcId || row.tcid,
 
-    w_exam: (row.w_exam || 0) * 100,
-    w_regular: (row.w_regular || 0) * 100,
-    w_test: (row.w_test || 0) * 100
+    wExam: (row.w_exam ?? row.wexam ?? 0) * 100,
+    wRegular: (row.w_regular ?? row.wregular ?? 0) * 100,
+    wTest: (row.w_test ?? row.wtest ?? 0) * 100
   }
+
   weightDialogVisible.value = true
 }
 
-const handleSaveWeights = () => {
-  // 核心逻辑：强制构造一个和后端实体类成员变量名完全一致的对象
+// 保存权重
+const handleSaveWeights = async () => {
   const submitData = {
-    tcid: weightForm.value.tcId || weightForm.value.tcid,
-    // 注意：这里必须和 Teaching.java 里的 private Double 后面的变量名一致
-    wregular: Number(weightForm.value.w_regular) / 100,
-    wtest: Number(weightForm.value.w_test) / 100,
-    wexam: Number(weightForm.value.w_exam) / 100
-  };
+    tcid: weightForm.value.tcId,
+    wexam: weightForm.value.wExam / 100,
+    wregular: weightForm.value.wRegular / 100,
+    wtest: weightForm.value.wTest / 100
+  }
 
-  console.log("【检查点】最终发给后端的 JSON：", JSON.stringify(submitData));
+  console.log("提交数据：", submitData)
 
-  request.post('/teaching/updateWeights', submitData).then(res => {
+  saveWeightLoading.value = true
+
+  try {
+    const response = await request.post('/teaching/updateWeights', submitData)
+    const res = response.data   // ✅ 关键修复
+
     if (res.code === 200 || res._code === 200) {
-      ElMessage.success("保存成功！");
-      weightDialogVisible.value = false;
-      // 这里的报错先不管，只要弹出“保存成功”就说明数据库操作完了
-      window.location.reload(); // 👈 暴力刷新整个页面，确保数据重新加载
+      ElMessage.success("保存成功")
+      weightDialogVisible.value = false
+
+      await fetchTableData()
+    } else {
+      ElMessage.error(res.msg || "保存失败")
     }
-  });
-};
+  } catch (e) {
+    console.error(e)
+    ElMessage.error("接口异常")
+  } finally {
+    saveWeightLoading.value = false
+  }
+}
+
+// 初始化
 onMounted(() => {
   fetchTableData()
 })

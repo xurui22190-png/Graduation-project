@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @ApiModel(value = "学生成绩显示对象")
@@ -24,6 +25,8 @@ public class StudentScoreVo implements Serializable {
 
     @ApiModelProperty(value = "学期ID")
     private Integer sctermid;
+
+    private Integer scclassid;
 
     @ApiModelProperty(value = "学年")
     private String yyear;
@@ -45,6 +48,18 @@ public class StudentScoreVo implements Serializable {
 
     @ApiModelProperty(value = "成绩")
     private Double scscore;
+
+    private BigDecimal scRegular;
+
+    private BigDecimal scTest;
+
+    private BigDecimal scExam;
+
+    private Double wregular;
+
+    private Double wtest;
+
+    private Double wexam;
 
     @ApiModelProperty(value = "状态")
     private Integer scstatus;
